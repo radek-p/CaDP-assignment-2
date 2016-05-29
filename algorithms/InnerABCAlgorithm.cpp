@@ -4,3 +4,7 @@
 //
 
 #include "InnerABCAlgorithm.h"
+
+void InnerABCAlgorithm::computeInitialDataDistribution() {
+
+}

@@ -9,3 +9,11 @@ void ColAAlgorithm::step2_performMultiplication() {
 
 }
 
+void ColAAlgorithm::computeInitialDataDistribution() {
+//    numProcReplicationGroup = c;
+//    A = make_shared<MatrixFragmentDescriptor>(
+//            matrixSize,
+//            matrixSize,
+//
+//    );
+}

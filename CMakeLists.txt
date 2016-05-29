@@ -3,7 +3,7 @@
 # numer indeksu: 335451
 #
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.4)
 project(matrixmul)
 
 # Find MPI package

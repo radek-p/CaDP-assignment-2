@@ -15,6 +15,9 @@ public:
             GenericMultiplicationAlgorithm(matrixASourceFile, matrixBSeed, exponent, c) { }
 
     virtual void step2_performMultiplication() override;
+
+protected:
+    virtual void computeInitialDataDistribution() override;
 };
 
 

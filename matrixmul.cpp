@@ -30,8 +30,6 @@ int main(int argc, char *argv[]) {
     bool count_ge = false;
 
     MPI_Init(&argc, &argv);
-    MPI_Comm_size(MPI_COMM_WORLD, &num_processes);
-    MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
     std::string matrixASourceFile = "";
 
@@ -66,6 +64,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // FIXME mpirank
     if ((gen_seed == -1) || ((mpi_rank == 0) && matrixASourceFile.size() == 0)) {
         fprintf(stderr, "error: missing seed or sparse matrix file; exiting\n");
         MPI_Finalize();
