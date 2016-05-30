@@ -5,6 +5,6 @@
 
 #include "InnerABCAlgorithm.h"
 
-void InnerABCAlgorithm::computeInitialDataDistribution() {
+void InnerABCAlgorithm::prepareInitialDistributionOfMatrices() {
 
 }

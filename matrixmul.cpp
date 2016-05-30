@@ -8,6 +8,7 @@
 #include "algorithms/GenericMultiplicationAlgorithm.h"
 #include "algorithms/ColAAlgorithm.h"
 #include "algorithms/InnerABCAlgorithm.h"
+#include "tests/testRunner.h"
 
 using namespace std;
 
@@ -23,13 +24,14 @@ int main(int argc, char *argv[]) {
     int option = -1;
 
     double comm_start = 0, comm_end = 0, comp_start = 0, comp_end = 0;
-    int num_processes = 1;
-    int mpi_rank = 0;
     int exponent = 1;
     double ge_element = 0;
     bool count_ge = false;
 
     MPI_Init(&argc, &argv);
+
+    // TODO REMOVE FROM HERE
+    int res = runTests();
 
     std::string matrixASourceFile = "";
 
@@ -64,14 +66,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // FIXME mpirank
-    if ((gen_seed == -1) || ((mpi_rank == 0) && matrixASourceFile.size() == 0)) {
-        fprintf(stderr, "error: missing seed or sparse matrix file; exiting\n");
-        MPI_Finalize();
-        return 3;
-    }
-
-
     /* -------------------------- *
      *   Multiplication process   *
      * -------------------------- */
@@ -80,6 +74,12 @@ int main(int argc, char *argv[]) {
     /* Select appropriate algorithm of parallel multiplication */
     if (use_inner) { algorithm = new InnerABCAlgorithm(matrixASourceFile, gen_seed, exponent, repl_fact); }
     else           { algorithm = new ColAAlgorithm    (matrixASourceFile, gen_seed, exponent, repl_fact); }
+
+    if ((gen_seed == -1) || (algorithm->isCoordinator() && matrixASourceFile.size() == 0)) {
+        fprintf(stderr, "error: missing seed or sparse matrix file; exiting\n");
+        MPI_Finalize();
+        return 3;
+    }
 
     /* Step 1. - load and distribute matrices */ {
         comm_start = MPI_Wtime();
@@ -95,11 +95,15 @@ int main(int argc, char *argv[]) {
     }
     /* Step 3. - print appropriate results */ {
         algorithm->step3_printResults(show_results, count_ge, ge_element);
-        cerr << "Runime statistics:\n"
-             << "\tcommunication:\t" << (comm_end-comm_start) << "\n"
-             << "\tcomputation:  \t" << (comp_end-comp_start) << endl;
+        if (algorithm->isCoordinator()) {
+            cerr << "Runime statistics:\n"
+            << "\tcommunication:\t" << (comm_end - comm_start) << "\n"
+            << "\tcomputation:  \t" << (comp_end - comp_start) << endl;
+        }
     }
 
     MPI_Finalize();
-    return 0;
+
+    // TODO REMOVE FROM HERE
+    return res;
 }

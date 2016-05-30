@@ -40,30 +40,28 @@ public:
 
     void step3_printResults(bool printMatrix, bool printGeCounter, double geThreshold);
 
-    void scatterSparseMatrixA();
-
-    void cacheSparseMatrixA();
-
-    void cacheDenseMatrixA();
-
     void countGreaterThan(double treshold);
 
     void gatherResultMatrix();
 
+    bool isCoordinator();
+
+    enum class PARTITION_TYPE { P_DIV_C_BLOCKS, P_BLOCKS };
+
+    static int getFirstIdx(PARTITION_TYPE partitionType, int blockIdx, int matrixSize, int p, int c);
+
 private:
-    std::string matrixASourceFile;
     int matrixBSeed;
 
 protected:
     int exponent;
     // Replication factor c
     int c;
-    size_t matrixSize;
-    size_t numReplicationGroups;
+    int matrixSize;
+    int numReplicationGroups;
 
     int rankGlobal    = INVALID_PARAMETER_VALUE;
     int numProcGlobal = INVALID_PARAMETER_VALUE;
-    inline bool isCoordinator();
 
     int rankReplicationGroup    = INVALID_PARAMETER_VALUE;
     int numProcReplicationGroup = INVALID_PARAMETER_VALUE;
@@ -74,7 +72,9 @@ protected:
     // Those descriptors describe parts of respective matrices
     shared_ptr<MatrixFragmentDescriptor> A, B, C;
 
-    virtual void computeInitialDataDistribution() = 0;
+    virtual void prepareInitialDistributionOfMatrices() = 0;
+
+    std::string matrixASourceFile;
 };
 
 

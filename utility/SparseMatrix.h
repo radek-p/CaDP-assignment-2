@@ -7,22 +7,27 @@
 #define MATRIXMUL_SPARSEMATRIX_H
 
 #include <vector>
+#include <map>
 #include <string>
-#include <i386/types.h>
 
 using namespace std;
 
 class SparseMatrix {
 public:
-    bool      rowMajor;
-    u_int32_t maxItemsPerRow;
-    u_int32_t width, height, nnz;
+    bool rowMajor;
+    int  maxItemsPerRow;
+    int  width, height, nnz;
 
-    vector<vector<pair<u_int32_t, double>>> data;
+    vector<map<int, double>> data;
 
     SparseMatrix(std::string sourceFile, bool storeInColumnMajorOrder = false);
 
-    void print();
+    friend std::ostream& operator<< (std::ostream& stream, const SparseMatrix& matrix);
+
+    double at(int i, int j) const;
+
+private:
+    void loadFromFile(std::string sourceFile, bool storeInColumnMajorOrder = false);
 };
 
 

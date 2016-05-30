@@ -18,10 +18,26 @@ include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 
 set(
         SOURCE_FILES
-        matrixmul.cpp
         algorithms/GenericMultiplicationAlgorithm.cpp
         algorithms/GenericMultiplicationAlgorithm.h
         algorithms/ColAAlgorithm.cpp
-        algorithms/ColAAlgorithm.h algorithms/InnerABCAlgorithm.cpp algorithms/InnerABCAlgorithm.h utility/SparseMatrix.cpp utility/SparseMatrix.h utility/logging.h utility/MatrixFragmentDescriptor.cpp utility/MatrixFragmentDescriptor.h)
-add_executable(matrixmul ${SOURCE_FILES})
+        algorithms/ColAAlgorithm.h
+        algorithms/InnerABCAlgorithm.cpp
+        algorithms/InnerABCAlgorithm.h
+        utility/SparseMatrix.cpp
+        utility/SparseMatrix.h
+        utility/logging.h
+        utility/MatrixFragmentDescriptor.cpp
+        utility/MatrixFragmentDescriptor.h
+)
+# TODO remove
+set(
+        TEST_SOURCES
+        tests/Test1.h
+        tests/testRunner.cpp
+        tests/Test.h
+        tests/testRunner.h)
+add_executable(matrixmul matrixmul.cpp ${SOURCE_FILES} ${TEST_SOURCES})
 target_link_libraries(matrixmul ${MPI_C_LIBRARIES})
+
+

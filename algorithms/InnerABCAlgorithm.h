@@ -19,7 +19,7 @@ public:
     }
 
 protected:
-    virtual void computeInitialDataDistribution() override;
+    virtual void prepareInitialDistributionOfMatrices() override;
 
 };
 
