@@ -4,23 +4,15 @@
 //
 
 #include "ColAAlgorithm.h"
+#include "MatrixOperations.h"
 
-void ColAAlgorithm::step2_performMultiplication() {
-    if (isCoordinator()) {
-        SparseMatrix wholeA(matrixASourceFile, true);
-
-        // Store my part of matrix
-
-        for (int procIdxGlobal = 1; procIdxGlobal < numProcGlobal; ++procIdxGlobal) {
-            int beginIdxIncl = getFirstIdx(PARTITION_TYPE::P_BLOCKS, procIdxGlobal    , matrixSize, numProcGlobal, c);
-            int endIdxExcl   = getFirstIdx(PARTITION_TYPE::P_BLOCKS, procIdxGlobal + 1, matrixSize, numProcGlobal, c);
-
-            // SendMatrix
-        }
-    } else {
-        // Receive A matrix
+void ColAAlgorithm::step6_performSingleMultiplication() {
+    for (int i = 0; i < pDivC(); ++i) {
+        *C += A * B;
+        shiftMatrixA(); // TODO maybe do not perform last shift
     }
 }
 
-void ColAAlgorithm::prepareInitialDistributionOfMatrices() {
+void ColAAlgorithm::step4_redistributeMatrixA() {
+    // TODO implement
 }

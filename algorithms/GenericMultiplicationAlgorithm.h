@@ -10,8 +10,9 @@
 #include <string>
 #include <memory>
 
-#include "../utility/SparseMatrix.h"
-#include "../utility/MatrixFragmentDescriptor.h"
+#include "../utility/SparseMatrixFragment.h"
+#include "../utility/MatrixFragment.h"
+#include "../utility/DenseMatrixFragment.h"
 
 using namespace std;
 
@@ -32,50 +33,57 @@ class GenericMultiplicationAlgorithm {
 private:
     static const int INVALID_PARAMETER_VALUE = -1;
 public:
-    GenericMultiplicationAlgorithm(const string &matrixASourceFile, int matrixBSeed, int exponent, int c);
+    GenericMultiplicationAlgorithm(int c);
 
-    void step1_prepareData();
-
-    virtual void step2_performMultiplication() = 0;
-
-    void step3_printResults(bool printMatrix, bool printGeCounter, double geThreshold);
-
-    void countGreaterThan(double treshold);
-
-    void gatherResultMatrix();
+    void step1_loadMatrixA(const string &fileName);
+    void step2_distributeMatrixA();
+    void step3_generateMatrixB(int seed);
+    virtual void step4_redistributeMatrixA() = 0;
+    void step5_redistributeMatrixB();
+    virtual void step6_performSingleMultiplication() = 0;
+    void step7_setResultAsNewBMatrix();
+    void step8_countAndPrintGe(double geElement);
+    void step9_printResultMatrix();
 
     bool isCoordinator();
+    static bool isCoordinator(int rankGlobal);
 
-    enum class PARTITION_TYPE { P_DIV_C_BLOCKS, P_BLOCKS };
-
-    static int getFirstIdx(PARTITION_TYPE partitionType, int blockIdx, int matrixSize, int p, int c);
-
-private:
-    int matrixBSeed;
+    // Partitions interval matrixSize into p blocks of similar size.
+    static int getFirstIdx(int blockIdx, int matrixSize, int p);
 
 protected:
-    int exponent;
     // Replication factor c
-    int c;
-    int matrixSize;
+    int replicationFactor_;
+    // int matrixSize;
     int numReplicationGroups;
 
-    int rankGlobal    = INVALID_PARAMETER_VALUE;
-    int numProcGlobal = INVALID_PARAMETER_VALUE;
+    int rankGlobal_    = INVALID_PARAMETER_VALUE;
+    int numProcGlobal_ = INVALID_PARAMETER_VALUE;
 
-    int rankReplicationGroup    = INVALID_PARAMETER_VALUE;
-    int numProcReplicationGroup = INVALID_PARAMETER_VALUE;
+    int c()     const { return replicationFactor_; };
+    int p()     const { return numProcGlobal_;     };
+    int pDivC() const { return numProcGlobal_ / replicationFactor_; };
 
-    int rankRowGroup    = INVALID_PARAMETER_VALUE;
-    int numProcRowGroup = INVALID_PARAMETER_VALUE;
+    //    int rankReplicationGroup    = INVALID_PARAMETER_VALUE;
+    //    int numProcReplicationGroup = INVALID_PARAMETER_VALUE;
+    //
+    //    int rankRowGroup    = INVALID_PARAMETER_VALUE;
+    //    int numProcRowGroup = INVALID_PARAMETER_VALUE;
 
-    // Those descriptors describe parts of respective matrices
-    shared_ptr<MatrixFragmentDescriptor> A, B, C;
+    // Pointer to whole matrix A, is is used only by
+    // the coordinator and is destroyed in step2
+    shared_ptr<SparseMatrix> wholeA;
 
-    virtual void prepareInitialDistributionOfMatrices() = 0;
+    // Initial part of A matrix, its size is
+    shared_ptr<SparseMatrixFragment> initialAPart;
 
-    std::string matrixASourceFile;
+    // Pointers to parts of respective matrices.
+    // In InnerABC size of each part is 1/(p/c) of size of the whole matrix,
+    // but in ColA size of B is 1/p of size of whole B.
+    shared_ptr<SparseMatrixFragment> A;
+    shared_ptr<DenseMatrixFragment>  B, C;
+
+    void shiftMatrixA();
 };
-
 
 #endif //MATRIXMUL_GENERICMULTIPLICATIONALGORITHM_H

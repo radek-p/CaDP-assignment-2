@@ -11,14 +11,13 @@
 
 class ColAAlgorithm : public GenericMultiplicationAlgorithm {
 public:
-    ColAAlgorithm(const string &matrixASourceFile, int matrixBSeed, int exponent, int c) :
-            GenericMultiplicationAlgorithm(matrixASourceFile, matrixBSeed, exponent, c) { }
+    ColAAlgorithm(int c) :
+            GenericMultiplicationAlgorithm(c) { }
 
-    virtual void step2_performMultiplication() override;
+    virtual void step4_redistributeMatrixA();
 
-protected:
-    virtual void prepareInitialDistributionOfMatrices() override;
+    virtual void step6_performSingleMultiplication();
+
 };
-
 
 #endif //MATRIXMUL_COLAALGORITHM_H

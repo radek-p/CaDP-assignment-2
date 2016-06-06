@@ -9,64 +9,86 @@
 #include "GenericMultiplicationAlgorithm.h"
 
 
-GenericMultiplicationAlgorithm::GenericMultiplicationAlgorithm(
-        const string &matrixASourceFile, int matrixBSeed, int exponent, int c
-) :
-        matrixASourceFile(matrixASourceFile), matrixBSeed(matrixBSeed), exponent(exponent), c(c)
-{
-
+GenericMultiplicationAlgorithm::GenericMultiplicationAlgorithm(int c ) : replicationFactor_(c) {
     // Get information about size and position in MPI_COMM_WORLD
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcGlobal);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rankGlobal);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcGlobal_);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rankGlobal_);
 
-    cout << "my rank: " << rankGlobal << endl;
+    cout << "my rank: " << rankGlobal_ << endl;
 }
 
 /* - Implementation of op level steps of algorithm ------------------------------------------------------------------ */
 
-void GenericMultiplicationAlgorithm::step1_prepareData() {
-    prepareInitialDistributionOfMatrices();
-}
-
-void GenericMultiplicationAlgorithm::step3_printResults(bool printMatrix, bool printGeCounter, double geThreshold) {
-    if (printMatrix) {
-//        // replace the following line: print the whole result matrix
-//        gatherResultMatrix();
-//        printf("1 1\n42\n");
-    }
-
-    if (printGeCounter) {
-//        countGreaterThan(geThreshold);
-//        // replace the following line: count ge elements
-//        printf("54\n");
-    }
-}
-
-void GenericMultiplicationAlgorithm::countGreaterThan(double treshold) {
-
-}
-
-void GenericMultiplicationAlgorithm::gatherResultMatrix() {
-
-}
-
 bool GenericMultiplicationAlgorithm::isCoordinator() {
+    return isCoordinator(rankGlobal_);
+}
+
+bool GenericMultiplicationAlgorithm::isCoordinator(int rankGlobal) {
     return rankGlobal == 0;
 }
 
 int GenericMultiplicationAlgorithm::getFirstIdx(
-        PARTITION_TYPE partitionType, int j, int matrixSize, int p, int c
+        int j, int matrixSize, int p
 ) {
-    if (partitionType == PARTITION_TYPE::P_DIV_C_BLOCKS) {
-        int p_div_c = p / c;
-        return j * (matrixSize / p_div_c) + min(j, matrixSize % p_div_c);
-    } else { // PARTITION_TYPE::P_BLOCKS
-        int superBlockFirstIncl = getFirstIdx(PARTITION_TYPE::P_DIV_C_BLOCKS, j % c,     matrixSize, p, c);
-        int superBlockLastExcl  = getFirstIdx(PARTITION_TYPE::P_DIV_C_BLOCKS, j % c + 1, matrixSize, p, c);
-        int superBlockSize = superBlockLastExcl - superBlockFirstIncl;
-        return superBlockFirstIncl + (j % c) * (superBlockSize / c) + min(j % c, superBlockSize % c);
-    }
+    // Example: p = 6, matrixSize = 39 = 6 * p + 3
+    // |xxxxxx|xxxxxx|xxxxxx|xxxxxx|xxxxxx|xxxxxx|xxx|
+    //                                            ^^^
+    // remaining 3 elements should be distributed
+    // uniformly into p blocks:
+    // |xxxxxx|xxxxxxx|xxxxxx|xxxxxxx|xxxxxx|xxxxxxx||
+    //         ^              ^              ^
+    //         ----- blocks where extra  -----
+    //               elements were added
+    // j:
+    // |   0   |  1   |   2   |  3   |   4   |  5   ||  6
+    // j * 3 / p:
+    // |   0   |  0   |   1   |  1   |   2   |  2   ||  3
+
+    int baseBlockSize  = matrixSize / p;
+    int remainingCount = matrixSize % p; // number in {0, 1, 2, ..., p-1}
+    int jthBlockFirstIncl = (baseBlockSize * j) + ((remainingCount * j) / p);
+
+    // Note that
+    // for j = 0: remainingCount * j / p = 0
+    // for j = p: remainingCount * p / p = remainingCount
+    // so all elements are uniformly distributed.
+
+    return jthBlockFirstIncl;
 }
+
+void GenericMultiplicationAlgorithm::step1_loadMatrixA(const string &fileName) {
+
+}
+
+void GenericMultiplicationAlgorithm::step2_distributeMatrixA() {
+
+}
+
+void GenericMultiplicationAlgorithm::step3_generateMatrixB(int seed) {
+
+}
+
+void GenericMultiplicationAlgorithm::step5_redistributeMatrixB() {
+
+}
+
+void GenericMultiplicationAlgorithm::step7_setResultAsNewBMatrix() {
+
+}
+
+void GenericMultiplicationAlgorithm::step8_countAndPrintGe(double geElement) {
+
+}
+
+void GenericMultiplicationAlgorithm::step9_printResultMatrix() {
+
+}
+
+void GenericMultiplicationAlgorithm::shiftMatrixA() {
+
+}
+
+
 
 
 

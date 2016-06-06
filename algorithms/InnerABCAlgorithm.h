@@ -11,15 +11,16 @@
 
 class InnerABCAlgorithm : public GenericMultiplicationAlgorithm {
 public:
-    InnerABCAlgorithm(const string &matrixASourceFile, int matrixBSeed, int exponent, int c) :
-            GenericMultiplicationAlgorithm(matrixASourceFile, matrixBSeed, exponent, c) { }
+    InnerABCAlgorithm(int c) :
+            GenericMultiplicationAlgorithm(c) { }
 
-    virtual void step2_performMultiplication() override {
+    virtual void step4_redistributeMatrixA();
 
-    }
+    virtual void step6_performSingleMultiplication();
 
 protected:
-    virtual void prepareInitialDistributionOfMatrices() override;
+    int q() const { return numProcGlobal_ / (replicationFactor_ * replicationFactor_); };
+    int l() const { return 42; }; // TODO implement
 
 };
 

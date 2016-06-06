@@ -8,7 +8,6 @@
 #include "algorithms/GenericMultiplicationAlgorithm.h"
 #include "algorithms/ColAAlgorithm.h"
 #include "algorithms/InnerABCAlgorithm.h"
-#include "tests/testRunner.h"
 
 using namespace std;
 
@@ -30,8 +29,8 @@ int main(int argc, char *argv[]) {
 
     MPI_Init(&argc, &argv);
 
-    // TODO REMOVE FROM HERE
-    int res = runTests();
+    // TODO remove from here
+    //    int res = runTests();
 
     std::string matrixASourceFile = "";
 
@@ -72,8 +71,8 @@ int main(int argc, char *argv[]) {
     GenericMultiplicationAlgorithm * algorithm;
 
     /* Select appropriate algorithm of parallel multiplication */
-    if (use_inner) { algorithm = new InnerABCAlgorithm(matrixASourceFile, gen_seed, exponent, repl_fact); }
-    else           { algorithm = new ColAAlgorithm    (matrixASourceFile, gen_seed, exponent, repl_fact); }
+    if (use_inner) { algorithm = new InnerABCAlgorithm(repl_fact); }
+    else           { algorithm = new ColAAlgorithm    (repl_fact); }
 
     if ((gen_seed == -1) || (algorithm->isCoordinator() && matrixASourceFile.size() == 0)) {
         fprintf(stderr, "error: missing seed or sparse matrix file; exiting\n");
@@ -81,20 +80,43 @@ int main(int argc, char *argv[]) {
         return 3;
     }
 
-    /* Step 1. - load and distribute matrices */ {
-        comm_start = MPI_Wtime();
-        algorithm->step1_prepareData();
-        MPI_Barrier(MPI_COMM_WORLD);
-        comm_end = MPI_Wtime();
+    /* Load matrix from file */ {
+        algorithm->step1_loadMatrixA(matrixASourceFile);
     }
-    /* Step 2. - do required multiplications */ {
-        comp_start = MPI_Wtime();
-        algorithm->step2_performMultiplication();
-        MPI_Barrier(MPI_COMM_WORLD);
-        comp_end = MPI_Wtime();
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    comm_start = MPI_Wtime();
+
+    /* Prepare initial distribution of matrices */ {
+        algorithm->step2_distributeMatrixA();
+        algorithm->step3_generateMatrixB(gen_seed);
     }
-    /* Step 3. - print appropriate results */ {
-        algorithm->step3_printResults(show_results, count_ge, ge_element);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+    comm_end = MPI_Wtime();
+    comp_start = MPI_Wtime();
+
+    /* Perform multiplication */ {
+        algorithm->step4_redistributeMatrixA();
+        algorithm->step5_redistributeMatrixB();
+
+        for (int iter = 0; iter < exponent; ++iter) {
+            algorithm->step6_performSingleMultiplication();
+            if (iter < exponent - 1)
+                algorithm->step7_setResultAsNewBMatrix();
+        }
+    }
+    
+    MPI_Barrier(MPI_COMM_WORLD);
+    comp_end = MPI_Wtime();
+
+    /* Print results */ {
+        if (count_ge) {
+            algorithm->step8_countAndPrintGe(ge_element);
+        }
+        if (show_results) {
+            algorithm->step9_printResultMatrix();
+        }
         if (algorithm->isCoordinator()) {
             cerr << "Runime statistics:\n"
             << "\tcommunication:\t" << (comm_end - comm_start) << "\n"
@@ -104,6 +126,6 @@ int main(int argc, char *argv[]) {
 
     MPI_Finalize();
 
-    // TODO REMOVE FROM HERE
-    return res;
+    // TODO remove from here
+    return 0;
 }
