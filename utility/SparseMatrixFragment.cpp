@@ -146,13 +146,20 @@ void SparseMatrixFragment::loadFromFile(const std::string &fileName) {
 }
 
 std::shared_ptr<SparseMatrixFragment> SparseMatrixFragment::mergeRows(const std::vector<SparseMatrixFragment> &fragmentsToConcat) {
+
     std::shared_ptr<SparseMatrixFragment> res = shared_ptr<SparseMatrixFragment>(new SparseMatrixFragment);
+    setMergeDimensions(fragmentsToConcat, res->size_);
+
+    // TODO Implement sparse row merge
 
     return res;
 }
 
 std::shared_ptr<SparseMatrixFragment> SparseMatrixFragment::mergeCols(const std::vector<SparseMatrixFragment> &fragmentsToConcat) {
     std::shared_ptr<SparseMatrixFragment> res = shared_ptr<SparseMatrixFragment>(new SparseMatrixFragment);
+    setMergeDimensions(fragmentsToConcat, res->size_);
+
+    // TODO Implement sparse column merge
 
     return res;
 }
@@ -168,6 +175,33 @@ std::shared_ptr<SparseMatrixFragment> SparseMatrixFragment::columnSubmatrix(int 
 
     return res;
 }
+
+void SparseMatrixFragment::setMergeDimensions(const std::vector<SparseMatrixFragment> &fragmentsToConcat,
+                                              SparseMatrixFragmentDescriptor &descr) {
+
+    // FIXME Maybe remove copy / paste code from DenseMatrixFragment
+    assert(fragmentsToConcat.size() > 0);
+
+    const auto & size = fragmentsToConcat[0].size();
+
+    int minPCol = size.pCol();
+    int minPRow = size.pRow();
+    int maxKCol = size.kCol();
+    int maxKRow = size.kRow();
+
+    for (const auto &item : fragmentsToConcat) {
+        minPCol = min(minPCol, item.size().pCol());
+        minPRow = min(minPRow, item.size().pRow());
+        maxKCol = max(maxKCol, item.size().kCol());
+        maxKRow = max(maxKRow, item.size().kRow());
+    }
+
+    descr.pCol(minPCol);
+    descr.pRow(minPRow);
+    descr.kCol(maxKCol);
+    descr.kRow(maxKRow);
+}
+
 
 int SparseMatrixFragment::SparseMatrixFragmentDescriptor::nnz() const {
     return nnz_;

@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "GenericMultiplicationAlgorithm.h"
+#include "densematgen.h"
 
 
 GenericMultiplicationAlgorithm::GenericMultiplicationAlgorithm(int c ) : replicationFactor_(c) {
@@ -61,15 +62,26 @@ void GenericMultiplicationAlgorithm::step1_loadMatrixA(const string &fileName) {
 }
 
 void GenericMultiplicationAlgorithm::step2_distributeMatrixA() {
-
+    // TODO receive A size
 }
 
 void GenericMultiplicationAlgorithm::step3_generateMatrixB(int seed) {
+    MatrixFragment::MatrixFragmentDescriptor dscr = size_;
 
-}
+    dscr.fragmentHeight(dscr.matrixHeight());
+    dscr.fragmentWidth(dscr.matrixWidth());
 
-void GenericMultiplicationAlgorithm::step5_redistributeMatrixB() {
+    int firstColIncl = getFirstIdx(j(), dscr.matrixWidth(), p());
+    int lastColExcl  = getFirstIdx(j()+1, dscr.matrixWidth(), p());
 
+    dscr.pCol(firstColIncl);
+    dscr.kCol(lastColExcl);
+
+    B = make_shared<DenseMatrix>(dscr);
+
+    for (int i = B->size().pRow(); i < B->size().kRow(); ++i)
+        for (int j = B->size().pCol(); j < B->size().kCol(); ++j)
+            B->at(i, j) = generate_double(seed, i, j);
 }
 
 void GenericMultiplicationAlgorithm::step7_setResultAsNewBMatrix() {
@@ -77,7 +89,14 @@ void GenericMultiplicationAlgorithm::step7_setResultAsNewBMatrix() {
 }
 
 void GenericMultiplicationAlgorithm::step8_countAndPrintGe(double geElement) {
+    int counter = 0;
 
+    for (int i = C->size().pRow(); i < C->size().kRow(); ++i)
+        for (int j = C->size().pCol(); j < C->size().kCol(); ++j)
+            if (C->at(i, j) >= geElement)
+                ++counter;
+
+    // TODO Reduce counter value and print it on master
 }
 
 void GenericMultiplicationAlgorithm::step9_printResultMatrix() {

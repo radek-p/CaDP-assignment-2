@@ -16,14 +16,16 @@ typedef DenseMatrixFragment DenseMatrix;
 
 class DenseMatrixFragment : public Matrix {
 public:
-    class DenseMatrixFragmentDescriptor : public MatrixFragmentDescriptor {
-
-    };
+    DenseMatrixFragment(const MatrixFragmentDescriptor &size);
 
     // Information about matrix dimensions
-    DenseMatrixFragmentDescriptor _size;
-    const DenseMatrixFragmentDescriptor &size() const;
+    MatrixFragmentDescriptor _size;
+    const MatrixFragmentDescriptor &size() const;
 
+    element_t &at(int i, int j);
+    const element_t &at(int i, int j) const;
+
+    static std::shared_ptr<DenseMatrixFragment> createMatrixForMerge(const std::vector<DenseMatrixFragment> &fragmentsToConcat);
     static std::shared_ptr<DenseMatrixFragment> mergeRows(const std::vector<DenseMatrixFragment> &fragmentsToConcat);
     static std::shared_ptr<DenseMatrixFragment> mergeCols(const std::vector<DenseMatrixFragment> &fragmentsToConcat);
 
@@ -36,6 +38,8 @@ public:
     );
 
 private:
+    std::vector<double> data_;
+
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 };

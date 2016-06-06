@@ -38,6 +38,7 @@ public:
     std::shared_ptr<SparseMatrixFragment> rowSubmatrix(int firstRowIncl, int lastRowExcl) const;
     std::shared_ptr<SparseMatrixFragment> columnSubmatrix(int firstColIncl, int lastColExcl) const;
 
+    static void setMergeDimensions(const std::vector<SparseMatrixFragment> &fragmentsToConcat, SparseMatrixFragmentDescriptor &descr);
     static std::shared_ptr<SparseMatrixFragment> mergeRows(const std::vector<SparseMatrixFragment> &fragmentsToConcat);
     static std::shared_ptr<SparseMatrixFragment> mergeCols(const std::vector<SparseMatrixFragment> &fragmentsToConcat);
 

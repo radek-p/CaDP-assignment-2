@@ -14,5 +14,9 @@ void ColAAlgorithm::step6_performSingleMultiplication() {
 }
 
 void ColAAlgorithm::step4_redistributeMatrixA() {
-    // TODO implement
+    vector<SparseMatrix> fragments;
+
+    // TODO Send and receive matrices for merge
+
+    A = SparseMatrixFragment::mergeCols(fragments);
 }

@@ -39,7 +39,7 @@ public:
     void step2_distributeMatrixA();
     void step3_generateMatrixB(int seed);
     virtual void step4_redistributeMatrixA() = 0;
-    void step5_redistributeMatrixB();
+    virtual void step5_redistributeMatrixB() { };
     virtual void step6_performSingleMultiplication() = 0;
     void step7_setResultAsNewBMatrix();
     void step8_countAndPrintGe(double geElement);
@@ -52,6 +52,7 @@ public:
     static int getFirstIdx(int blockIdx, int matrixSize, int p);
 
 protected:
+    MatrixFragment::MatrixFragmentDescriptor size_;
     // Replication factor c
     int replicationFactor_;
     // int matrixSize;
@@ -63,6 +64,7 @@ protected:
     int c()     const { return replicationFactor_; };
     int p()     const { return numProcGlobal_;     };
     int pDivC() const { return numProcGlobal_ / replicationFactor_; };
+    int j()     const { return rankGlobal_; };
 
     //    int rankReplicationGroup    = INVALID_PARAMETER_VALUE;
     //    int numProcReplicationGroup = INVALID_PARAMETER_VALUE;

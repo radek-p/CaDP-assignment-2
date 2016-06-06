@@ -16,6 +16,9 @@ public:
 
     virtual void step4_redistributeMatrixA();
 
+    virtual void step5_redistributeMatrixB();
+
+
     virtual void step6_performSingleMultiplication();
 
 protected:

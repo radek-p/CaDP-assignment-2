@@ -19,8 +19,12 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 # TODO remove -Wno-??? flags later, when the project is more mature
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-private-field")
 
-INCLUDE_DIRECTORIES(utility algorithms)
-
+INCLUDE_DIRECTORIES(. utility algorithms)
+set(
+        FOREIGN_FILES
+        densematgen.h
+        densematgen.c
+)
 set(
         SOURCE_FILES
         algorithms/GenericMultiplicationAlgorithm.cpp
@@ -39,7 +43,7 @@ set(
         utility/MatrixOperations.h
         utility/MatrixOperations.cpp
 )
-add_executable(matrixmul matrixmul.cpp ${SOURCE_FILES})
+add_executable(matrixmul matrixmul.cpp ${SOURCE_FILES} ${FOREIGN_FILES})
 target_link_libraries(matrixmul ${MPI_C_LIBRARIES})
 
 

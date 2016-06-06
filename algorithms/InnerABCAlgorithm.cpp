@@ -7,9 +7,23 @@
 
 
 void InnerABCAlgorithm::step4_redistributeMatrixA() {
+    vector<SparseMatrix> fragments;
+
+    // TODO Send and receive matrices for merge
+
+    A = SparseMatrixFragment::mergeRows(fragments);
+
     for (int i = 0; i < q() * l(); ++i) {
         shiftMatrixA();
     }
+}
+
+void InnerABCAlgorithm::step5_redistributeMatrixB() {
+    vector<DenseMatrix> fragments;
+
+    // TODO Send and receive matrices for merge
+
+    B = DenseMatrixFragment::mergeCols(fragments);
 }
 
 void InnerABCAlgorithm::step6_performSingleMultiplication() {
