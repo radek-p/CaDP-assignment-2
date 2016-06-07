@@ -19,14 +19,14 @@ const DenseMatrixFragment::MatrixFragmentDescriptor &DenseMatrixFragment::size()
 //}
 
 std::shared_ptr<DenseMatrixFragment> DenseMatrixFragment::mergeRows(
-        const std::vector<DenseMatrixFragment> &fragmentsToConcat) {
+        const std::vector<shared_ptr<DenseMatrixFragment>> &fragmentsToConcat) {
 
     auto res = createMatrixForMerge(fragmentsToConcat);
 
     for (const auto &item : fragmentsToConcat) {
-        for (int i = item.size().pRow(); i < item.size().kRow(); ++i) {
-            for (int j = item.size().pCol(); j < item.size().kCol(); ++j) {
-                res->at(i, j) = item.at(i, j); // TODO Maybe improve efficency
+        for (int i = item->size().pRow(); i < item->size().kRow(); ++i) {
+            for (int j = item->size().pCol(); j < item->size().kCol(); ++j) {
+                res->at(i, j) = item->at(i, j); // TODO Maybe improve efficency
             }
         }
     }
@@ -35,7 +35,7 @@ std::shared_ptr<DenseMatrixFragment> DenseMatrixFragment::mergeRows(
 }
 
 std::shared_ptr<DenseMatrixFragment> DenseMatrixFragment::mergeCols(
-        const std::vector<DenseMatrixFragment> &fragmentsToConcat) {
+        const std::vector<shared_ptr<DenseMatrixFragment>> &fragmentsToConcat) {
 
     // In current implementation the same as merge of rows.
     return mergeRows(fragmentsToConcat);
@@ -54,11 +54,11 @@ const MatrixFragment::element_t &DenseMatrixFragment::at(int i, int j) const {
 }
 
 std::shared_ptr<DenseMatrixFragment> DenseMatrixFragment::createMatrixForMerge(
-        const std::vector<DenseMatrixFragment> &fragmentsToConcat) {
+        const std::vector<shared_ptr<DenseMatrixFragment>> &fragmentsToConcat) {
 
     assert(fragmentsToConcat.size() > 0);
 
-    const auto & size = fragmentsToConcat[0].size();
+    const auto & size = fragmentsToConcat[0]->size();
 
     int minPCol = size.pCol();
     int minPRow = size.pRow();
@@ -66,10 +66,10 @@ std::shared_ptr<DenseMatrixFragment> DenseMatrixFragment::createMatrixForMerge(
     int maxKRow = size.kRow();
 
     for (const auto &item : fragmentsToConcat) {
-        minPCol = min(minPCol, item.size().pCol());
-        minPRow = min(minPRow, item.size().pRow());
-        maxKCol = max(maxKCol, item.size().kCol());
-        maxKRow = max(maxKRow, item.size().kRow());
+        minPCol = min(minPCol, item->size().pCol());
+        minPRow = min(minPRow, item->size().pRow());
+        maxKCol = max(maxKCol, item->size().kCol());
+        maxKRow = max(maxKRow, item->size().kRow());
     }
 
     MatrixFragmentDescriptor dscr = size;

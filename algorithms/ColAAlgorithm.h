@@ -14,15 +14,17 @@ public:
     ColAAlgorithm(int c) :
             GenericMultiplicationAlgorithm(c) { }
 
-    virtual void step2_distributeMatrixA();
-
     virtual void step4_redistributeMatrixA();
 
     virtual void step6_performSingleMultiplication();
 
     virtual void step7_setResultAsNewBMatrix();
 
+    virtual void step9_printResultMatrix();
 
+    virtual bool splitAInRowGroups();
+
+    void shiftMatrixA();
 };
 
 #endif //MATRIXMUL_COLAALGORITHM_H

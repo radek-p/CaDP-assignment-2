@@ -10,6 +10,8 @@
 #include <memory>
 #include <vector>
 #include <boost/serialization/serialization.hpp>
+#include <boost/mpl/bool.hpp>
+#include <boost/mpi/datatype.hpp>
 
 class MatrixFragment;
 class SparseMatrixFragment;
@@ -76,5 +78,6 @@ private:
     void serialize(Archive &, const unsigned int) { };
 };
 
+BOOST_IS_MPI_DATATYPE(MatrixFragment::MatrixFragmentDescriptor)
 
 #endif //MATRIXMUL_MATRIXFRAGMENT_H

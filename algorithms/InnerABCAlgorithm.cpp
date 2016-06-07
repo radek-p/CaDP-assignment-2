@@ -6,8 +6,13 @@
 #include "InnerABCAlgorithm.h"
 
 
+bool InnerABCAlgorithm::splitAInRowGroups() {
+    // InnerABC algorithm splits matrix A into row groups.
+    return true;
+}
+
 void InnerABCAlgorithm::step4_redistributeMatrixA() {
-    vector<SparseMatrix> fragments;
+    vector<shared_ptr<SparseMatrix>> fragments;
 
     // TODO Send and receive matrices for merge
 
@@ -19,7 +24,7 @@ void InnerABCAlgorithm::step4_redistributeMatrixA() {
 }
 
 void InnerABCAlgorithm::step5_redistributeMatrixB() {
-    vector<DenseMatrix> fragments;
+    vector<shared_ptr<DenseMatrix>> fragments;
 
     // TODO Send and receive matrices for merge
 
@@ -37,4 +42,14 @@ void InnerABCAlgorithm::step7_setResultAsNewBMatrix() {
     // TODO Send C and set as B
 
     *C = 0;
+}
+
+void InnerABCAlgorithm::shiftMatrixA() {
+
+}
+
+void InnerABCAlgorithm::step9_printResultMatrix() {
+    if (isCoordinator()) {
+        cout << "The matrix should be printed" << endl;
+    }
 }

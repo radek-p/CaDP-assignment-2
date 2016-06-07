@@ -9,7 +9,10 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <memory>
 #include <boost/serialization/base_object.hpp>
+
+#include <boost/mpi/communicator.hpp>
 
 #include "MatrixFragment.h"
 #include "MatrixOperations.h"
@@ -17,6 +20,8 @@
 typedef SparseMatrixFragment SparseMatrix;
 
 class SparseMatrixFragment : public MatrixFragment {
+    boost::mpi::communicator world;
+    friend class DeferredSparseDenseMultiplication;
 public:
     class SparseMatrixFragmentDescriptor : public MatrixFragmentDescriptor {
         friend class SparseMatrixFragment;
@@ -46,19 +51,19 @@ public:
     SparseMatrixFragment(const SparseMatrixFragmentDescriptor &descriptor);
 
     // These methods return submatrices that only contain rows / columns in given interval
-//    std::vector<std::shared_ptr<SparseMatrixFragment>> splitIntoRowGroups(const std::vector<int> &colDivision) const;
-    void splitIntoColumnGroups(const std::vector<int> &rowDivision, std::vector<SparseMatrixFragment> &res) const;
-    void splitIntoRowGroups(const std::vector<int> &columnDivision, std::vector<SparseMatrixFragment> &res) const;
+    void splitIntoGroups(const std::vector<int> rowDivision, std::vector<std::shared_ptr<SparseMatrixFragment>> &res, bool groupRows) const;
+    void splitIntoColumnGroups(const std::vector<int> &rowDivision, std::vector<std::shared_ptr<SparseMatrixFragment>> &res) const;
+    void splitIntoRowGroups(const std::vector<int> &columnDivision, std::vector<std::shared_ptr<SparseMatrixFragment>> &res) const;
 
-    static void setMergeDimensions(const std::vector<SparseMatrixFragment> &fragmentsToConcat, SparseMatrixFragmentDescriptor &descr);
-    static std::shared_ptr<SparseMatrixFragment> mergeRows(const std::vector<SparseMatrixFragment> &fragmentsToConcat);
-    static std::shared_ptr<SparseMatrixFragment> mergeCols(const std::vector<SparseMatrixFragment> &fragmentsToConcat);
+    static void setMergeDimensions(const std::vector<std::shared_ptr<SparseMatrixFragment>> &fragmentsToConcat, SparseMatrixFragmentDescriptor &descr);
+    static std::shared_ptr<SparseMatrixFragment> mergeRows(const std::vector<std::shared_ptr<SparseMatrixFragment>> &fragmentsToConcat);
+    static std::shared_ptr<SparseMatrixFragment> mergeCols(const std::vector<std::shared_ptr<SparseMatrixFragment>> &fragmentsToConcat);
 
     friend std::ostream& operator<< (std::ostream& stream, const SparseMatrix& matrix);
 
     static std::shared_ptr<SparseMatrixFragment> loadFromFile(const std::string &fileName);
 
-    virtual ~SparseMatrixFragment() { std::cout << "Sparse matrix was deleted!" << std::endl; } // TODO delete that later
+    virtual ~SparseMatrixFragment() { /*std::cout << world.rank() << ": Sparse matrix was deleted!" << std::endl; */ } // TODO delete that later
 
     // Constructor used by internal methods that
     // have to perform custom initialisation
@@ -80,6 +85,8 @@ private:
 
     void loadFromFilePrivate(const std::string &fileName);
 };
+
+BOOST_IS_MPI_DATATYPE(SparseMatrixFragment::SparseMatrixFragmentDescriptor)
 
 std::ostream& operator<< (std::ostream& stream, const SparseMatrix& matrix);
 

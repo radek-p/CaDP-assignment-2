@@ -14,6 +14,8 @@ public:
     InnerABCAlgorithm(int c) :
             GenericMultiplicationAlgorithm(c) { }
 
+    virtual bool splitAInRowGroups();
+
     virtual void step4_redistributeMatrixA();
 
     virtual void step5_redistributeMatrixB();
@@ -22,11 +24,13 @@ public:
 
     virtual void step7_setResultAsNewBMatrix();
 
+    virtual void step9_printResultMatrix();
 
 protected:
     int q() const { return p() / (replicationFactor_ * replicationFactor_); };
     int l() const { return 42; }; // TODO implement
 
+    void shiftMatrixA();
 };
 
 

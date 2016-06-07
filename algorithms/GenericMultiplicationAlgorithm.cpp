@@ -4,7 +4,10 @@
 //
 
 #include <iostream>
+#include <sstream>
 #include <boost/mpi/collectives.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 #include "GenericMultiplicationAlgorithm.h"
 #include "densematgen.h"
@@ -18,7 +21,7 @@ GenericMultiplicationAlgorithm::GenericMultiplicationAlgorithm(int c ) : replica
 //    cout << "my rank: " << rankGlobal_ << endl;
 }
 
-/* - Implementation of op level steps of algorithm ------------------------------------------------------------------ */
+/* - Implementation of top level steps of algorithm ----------------------------------------------------------------- */
 
 bool GenericMultiplicationAlgorithm::isCoordinator() {
     return isCoordinator(world.rank());
@@ -63,6 +66,63 @@ void GenericMultiplicationAlgorithm::step1_loadMatrixA(const string &fileName) {
     }
 }
 
+void GenericMultiplicationAlgorithm::step2_distributeMatrixA() {
+
+    A = shared_ptr<SparseMatrixFragment>(new SparseMatrixFragment());
+    int maxPartSize = -1;
+    vector<char> allMatricesTogether(0);
+
+    if (isCoordinator()) {
+        vector<shared_ptr<SparseMatrixFragment>> parts(0);
+        auto division = prepareDivision(wholeA->size().matrixWidth(), p()); // TODO Width / height
+        wholeA->splitIntoGroups(division, parts, splitAInRowGroups());
+
+        vector<string> serializedMatrices(0);
+        for (auto const &part : parts) {
+            stringstream ss;
+            boost::archive::binary_oarchive ar(ss, boost::archive::no_header);
+            ar << *part;
+            serializedMatrices.push_back(string(ss.str()));
+            maxPartSize = max(maxPartSize, (int) serializedMatrices[serializedMatrices.size() - 1].length());
+        }
+
+        boost::mpi::broadcast(world, maxPartSize, 0);
+
+        allMatricesTogether.resize(parts.size() * maxPartSize);
+        for (int i = 0; i < parts.size(); ++i) {
+            std::copy(
+                    &serializedMatrices[i][0],
+                    (&serializedMatrices[i][0]) + serializedMatrices[i].length(),
+                    &allMatricesTogether[i * maxPartSize]
+            );
+        }
+//        cout << "max part size: " << maxPartSize << endl;
+//        cout << *wholeA << endl;
+    } else {
+        boost::mpi::broadcast(world, maxPartSize, 0);
+    }
+
+    string mySingleReceivedMatrix((size_t) maxPartSize, '\0');
+    boost::mpi::scatter(world, &allMatricesTogether[0], &mySingleReceivedMatrix[0], maxPartSize, 0);
+
+    stringstream ss(mySingleReceivedMatrix);
+    boost::archive::binary_iarchive ar(ss, boost::archive::no_header);
+    ar >> *A;
+
+//    world.barrier();
+//    for (int i = 0; i < world.size(); ++i) {
+//        if (world.rank() == i) {
+//            cout << "scattered[" << world.rank() << "]" << endl;
+//            cout << *A << endl;
+//        }
+//        world.barrier();
+//    }
+
+    // Delete the wholeA matrix, it is not used anymore.
+    if (isCoordinator())
+        wholeA.reset();
+}
+
 void GenericMultiplicationAlgorithm::step3_generateMatrixB(int seed) {
     MatrixFragment::MatrixFragmentDescriptor dscr(A->size().matrixHeight(), A->size().matrixWidth());
 
@@ -74,19 +134,19 @@ void GenericMultiplicationAlgorithm::step3_generateMatrixB(int seed) {
 
     B = make_shared<DenseMatrix>(dscr);
 
-    cout << "B width: " << B->size().matrixWidth() << endl;
+//    cout << "B width: " << B->size().matrixWidth() << endl;
 
     for (int i = B->size().pRow(); i < B->size().kRow(); ++i)
         for (int j = B->size().pCol(); j < B->size().kCol(); ++j)
             B->at(i, j) = generate_double(seed, i, j);
 
-    for (int i = 0; i < world.size(); ++i) {
-        if (world.rank() == i) {
-            cout << "generated[" << world.rank() << "]" << endl;
-            cout << *B << endl;
-        }
-        world.barrier();
-    }
+//    for (int i = 0; i < world.size(); ++i) {
+//        if (world.rank() == i) {
+//            cout << "generated[" << world.rank() << "]" << endl;
+//            cout << *B << endl;
+//        }
+//        world.barrier();
+//    }
 }
 
 void GenericMultiplicationAlgorithm::step7_setResultAsNewBMatrix() {
@@ -95,7 +155,7 @@ void GenericMultiplicationAlgorithm::step7_setResultAsNewBMatrix() {
 
 void GenericMultiplicationAlgorithm::step8_countAndPrintGe(double geElement) {
 
-    int localCount = B->countGreaterOrEqual(geElement); // TODO swith to C
+    int localCount = C->countGreaterOrEqual(geElement); // TODO swith to C
     int globalCount = 0;
 
     boost::mpi::reduce(world, localCount, globalCount, std::plus<int>(), 0);
@@ -103,14 +163,6 @@ void GenericMultiplicationAlgorithm::step8_countAndPrintGe(double geElement) {
     if (isCoordinator()) {
         cout << "GE count: " << globalCount;
     }
-}
-
-void GenericMultiplicationAlgorithm::step9_printResultMatrix() {
-
-}
-
-void GenericMultiplicationAlgorithm::shiftMatrixA() {
-
 }
 
 std::vector<int> GenericMultiplicationAlgorithm::prepareDivision(int matrixSize, int p) {
@@ -121,6 +173,9 @@ std::vector<int> GenericMultiplicationAlgorithm::prepareDivision(int matrixSize,
 
     return res;
 }
+
+
+
 
 
 

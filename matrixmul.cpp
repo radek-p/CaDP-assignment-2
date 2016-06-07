@@ -127,8 +127,7 @@ int main(int argc, char *argv[]) {
     /* Prepare initial distribution of matrices */ {
         algorithm->step2_distributeMatrixA();
         algorithm->step3_generateMatrixB(gen_seed);
-        // algorithm->step8_countAndPrintGe(ge_element);
-        return 0;
+//        return 0;
     }
 
     world.barrier();
@@ -157,7 +156,7 @@ int main(int argc, char *argv[]) {
             algorithm->step9_printResultMatrix();
         }
         if (algorithm->isCoordinator()) {
-            cerr << "Runime statistics:\n"
+            cerr << "\n\n\nRunime statistics:\n"
             << "\tcommunication:\t" << (comm_end - comm_start) << "\n"
             << "\tcomputation:  \t" << (comp_end - comp_start) << endl;
         }

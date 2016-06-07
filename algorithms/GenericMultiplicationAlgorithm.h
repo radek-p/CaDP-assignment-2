@@ -37,14 +37,14 @@ public:
     GenericMultiplicationAlgorithm(int c);
 
     void step1_loadMatrixA(const string &fileName);
-    virtual void step2_distributeMatrixA() = 0;
+    void step2_distributeMatrixA();
     void step3_generateMatrixB(int seed);
     virtual void step4_redistributeMatrixA() = 0;
     virtual void step5_redistributeMatrixB() { };
     virtual void step6_performSingleMultiplication() = 0;
     virtual void step7_setResultAsNewBMatrix() = 0;
     void step8_countAndPrintGe(double geElement);
-    void step9_printResultMatrix();
+    virtual void step9_printResultMatrix() = 0;
 
     bool isCoordinator();
     static bool isCoordinator(int rankGlobal);
@@ -53,6 +53,15 @@ public:
     static int getFirstIdx(int blockIdx, int matrixSize, int p);
 
     static std::vector<int> prepareDivision(int matrixSize, int p);
+
+    // Procedure decides whether algorithm should split matrix A into column or row groups.
+    virtual bool splitAInRowGroups() = 0;
+
+    enum tags {
+        REDISTRIBUTE_A = 23,
+        REDISTRIBUTE_B = 48,
+        SHIFT_A = 67,
+    };
 
 //    template<class MatrixType>
 //    static void splitSparseMatrixByRows(const SparseMatrixFragment &mat, std::vector<std::shared_ptr<SparseMatrixFragment>> &res, int p);
@@ -91,8 +100,6 @@ protected:
     // but in ColA size of B is 1/p of size of whole B.
     shared_ptr<SparseMatrixFragment> A;
     shared_ptr<DenseMatrixFragment>  B, C;
-
-    void shiftMatrixA();
 };
 
 #endif //MATRIXMUL_GENERICMULTIPLICATIONALGORITHM_H

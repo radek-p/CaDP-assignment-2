@@ -28,9 +28,9 @@ public:
     element_t &at(int i, int j);
     const element_t &at(int i, int j) const;
 
-    static std::shared_ptr<DenseMatrixFragment> createMatrixForMerge(const std::vector<DenseMatrixFragment> &fragmentsToConcat);
-    static std::shared_ptr<DenseMatrixFragment> mergeRows(const std::vector<DenseMatrixFragment> &fragmentsToConcat);
-    static std::shared_ptr<DenseMatrixFragment> mergeCols(const std::vector<DenseMatrixFragment> &fragmentsToConcat);
+    static std::shared_ptr<DenseMatrixFragment> createMatrixForMerge(const std::vector<std::shared_ptr<DenseMatrixFragment>> &fragmentsToConcat);
+    static std::shared_ptr<DenseMatrixFragment> mergeRows(const std::vector<std::shared_ptr<DenseMatrixFragment>> &fragmentsToConcat);
+    static std::shared_ptr<DenseMatrixFragment> mergeCols(const std::vector<std::shared_ptr<DenseMatrixFragment>> &fragmentsToConcat);
 
     DenseMatrixFragment &operator+=(
             DeferredSparseDenseMultiplication AtB
