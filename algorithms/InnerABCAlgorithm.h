@@ -18,11 +18,13 @@ public:
 
     virtual void step5_redistributeMatrixB();
 
-
     virtual void step6_performSingleMultiplication();
 
+    virtual void step7_setResultAsNewBMatrix();
+
+
 protected:
-    int q() const { return numProcGlobal_ / (replicationFactor_ * replicationFactor_); };
+    int q() const { return p() / (replicationFactor_ * replicationFactor_); };
     int l() const { return 42; }; // TODO implement
 
 };

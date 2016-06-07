@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
+#include <boost/serialization/serialization.hpp>
 
 class MatrixFragment;
 class SparseMatrixFragment;
@@ -26,6 +27,9 @@ public:
         friend class DenseMatrixFragment;
 
     public:
+        MatrixFragmentDescriptor();
+        MatrixFragmentDescriptor(int height, int width);
+
         int matrixHeight() const;
         int matrixWidth() const;
         int pRow() const;
@@ -45,6 +49,7 @@ public:
         void matrixHeight(int matrixHeight);
 
         int getDataSize() const;
+        bool isFragment() const;
 
     private:
         // Size of the whole matrix
@@ -55,7 +60,21 @@ public:
 
         // Width and height of the matrix fragment
         int fragmentHeight_, fragmentWidth_;
+
+        friend class boost::serialization::access;
+
+        template<class Archive>
+        void serialize(Archive &ar, const unsigned int) {
+            ar & matrixHeight_ & matrixWidth_ & pRow_ & pCol_ & fragmentHeight_ & fragmentWidth_;
+        };
     };
+
+private:
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive &, const unsigned int) { };
 };
+
 
 #endif //MATRIXMUL_MATRIXFRAGMENT_H

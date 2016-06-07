@@ -3,8 +3,8 @@
 // numer indeksu: 335451
 //
 
-#include <mpi.h>
 #include <iostream>
+#include <boost/mpi/collectives.hpp>
 
 #include "GenericMultiplicationAlgorithm.h"
 #include "densematgen.h"
@@ -12,16 +12,16 @@
 
 GenericMultiplicationAlgorithm::GenericMultiplicationAlgorithm(int c ) : replicationFactor_(c) {
     // Get information about size and position in MPI_COMM_WORLD
-    MPI_Comm_size(MPI_COMM_WORLD, &numProcGlobal_);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rankGlobal_);
-
-    cout << "my rank: " << rankGlobal_ << endl;
+//    MPI_Comm_size(MPI_COMM_WORLD, &numProcGlobal_);
+//    MPI_Comm_rank(MPI_COMM_WORLD, &rankGlobal_);
+    cout.precision(5);
+//    cout << "my rank: " << rankGlobal_ << endl;
 }
 
 /* - Implementation of op level steps of algorithm ------------------------------------------------------------------ */
 
 bool GenericMultiplicationAlgorithm::isCoordinator() {
-    return isCoordinator(rankGlobal_);
+    return isCoordinator(world.rank());
 }
 
 bool GenericMultiplicationAlgorithm::isCoordinator(int rankGlobal) {
@@ -58,18 +58,13 @@ int GenericMultiplicationAlgorithm::getFirstIdx(
 }
 
 void GenericMultiplicationAlgorithm::step1_loadMatrixA(const string &fileName) {
-
-}
-
-void GenericMultiplicationAlgorithm::step2_distributeMatrixA() {
-    // TODO receive A size
+    if (isCoordinator()) {
+        wholeA = SparseMatrixFragment::loadFromFile(fileName);
+    }
 }
 
 void GenericMultiplicationAlgorithm::step3_generateMatrixB(int seed) {
-    MatrixFragment::MatrixFragmentDescriptor dscr = size_;
-
-    dscr.fragmentHeight(dscr.matrixHeight());
-    dscr.fragmentWidth(dscr.matrixWidth());
+    MatrixFragment::MatrixFragmentDescriptor dscr(A->size().matrixHeight(), A->size().matrixWidth());
 
     int firstColIncl = getFirstIdx(j(), dscr.matrixWidth(), p());
     int lastColExcl  = getFirstIdx(j()+1, dscr.matrixWidth(), p());
@@ -79,9 +74,19 @@ void GenericMultiplicationAlgorithm::step3_generateMatrixB(int seed) {
 
     B = make_shared<DenseMatrix>(dscr);
 
+    cout << "B width: " << B->size().matrixWidth() << endl;
+
     for (int i = B->size().pRow(); i < B->size().kRow(); ++i)
         for (int j = B->size().pCol(); j < B->size().kCol(); ++j)
             B->at(i, j) = generate_double(seed, i, j);
+
+    for (int i = 0; i < world.size(); ++i) {
+        if (world.rank() == i) {
+            cout << "generated[" << world.rank() << "]" << endl;
+            cout << *B << endl;
+        }
+        world.barrier();
+    }
 }
 
 void GenericMultiplicationAlgorithm::step7_setResultAsNewBMatrix() {
@@ -89,14 +94,15 @@ void GenericMultiplicationAlgorithm::step7_setResultAsNewBMatrix() {
 }
 
 void GenericMultiplicationAlgorithm::step8_countAndPrintGe(double geElement) {
-    int counter = 0;
 
-    for (int i = C->size().pRow(); i < C->size().kRow(); ++i)
-        for (int j = C->size().pCol(); j < C->size().kCol(); ++j)
-            if (C->at(i, j) >= geElement)
-                ++counter;
+    int localCount = B->countGreaterOrEqual(geElement); // TODO swith to C
+    int globalCount = 0;
 
-    // TODO Reduce counter value and print it on master
+    boost::mpi::reduce(world, localCount, globalCount, std::plus<int>(), 0);
+
+    if (isCoordinator()) {
+        cout << "GE count: " << globalCount;
+    }
 }
 
 void GenericMultiplicationAlgorithm::step9_printResultMatrix() {
@@ -106,6 +112,16 @@ void GenericMultiplicationAlgorithm::step9_printResultMatrix() {
 void GenericMultiplicationAlgorithm::shiftMatrixA() {
 
 }
+
+std::vector<int> GenericMultiplicationAlgorithm::prepareDivision(int matrixSize, int p) {
+    vector<int> res((size_t) (p + 1));
+
+    for (int i = 0; i <= p; ++i)
+        res[i] = getFirstIdx(i, matrixSize, p);
+
+    return res;
+}
+
 
 
 

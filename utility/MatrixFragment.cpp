@@ -51,6 +51,27 @@ int MatrixFragment::MatrixFragmentDescriptor::getDataSize() const {
     return fragmentWidth() * fragmentHeight();
 }
 
+MatrixFragment::MatrixFragmentDescriptor::MatrixFragmentDescriptor() {
+    matrixWidth_ = matrixHeight_ = fragmentWidth_ = fragmentHeight_ = pRow_ = pCol_ = 0;
+}
+
+MatrixFragment::MatrixFragmentDescriptor::MatrixFragmentDescriptor(int height, int width) {
+    matrixWidth_  = fragmentWidth_ = width;
+    matrixHeight_ = fragmentHeight_ = height;
+    pRow_ = 0;
+    pCol_ = 0;
+}
+
+bool MatrixFragment::MatrixFragmentDescriptor::isFragment() const {
+    return pCol_ > 0 || pRow_ > 0 || fragmentWidth_ < matrixWidth_ || fragmentHeight_ < matrixHeight_;
+}
+
+
+
+
+
+
+
 
 
 

@@ -4,17 +4,19 @@
 
 #include "DenseMatrixFragment.h"
 
+#include <cassert>
+
 using namespace std;
 
 
 const DenseMatrixFragment::MatrixFragmentDescriptor &DenseMatrixFragment::size() const {
-    return _size;
+    return size_;
 }
 
-template<class Archive>
-void DenseMatrixFragment::serialize(Archive & ar, const unsigned int version) {
-    ar & _size;
-}
+//template<class Archive>
+//void DenseMatrixFragment::serialize(Archive & ar, const unsigned int version) {
+//    ar & _size & data_;
+//}
 
 std::shared_ptr<DenseMatrixFragment> DenseMatrixFragment::mergeRows(
         const std::vector<DenseMatrixFragment> &fragmentsToConcat) {
@@ -39,18 +41,8 @@ std::shared_ptr<DenseMatrixFragment> DenseMatrixFragment::mergeCols(
     return mergeRows(fragmentsToConcat);
 }
 
-DenseMatrixFragment &DenseMatrixFragment::operator+=(DeferredSparseDenseMultiplication AtB) {
-    AtB.addTo(*this);
-    return *this;
-}
-
-DenseMatrixFragment &DenseMatrixFragment::operator=(DeferredSparseDenseMultiplication AtB) {
-    AtB.writeTo(*this);
-    return *this;
-}
-
 DenseMatrixFragment::DenseMatrixFragment(const MatrixFragmentDescriptor &size) :
-    data_((size_t) size.getDataSize())
+        size_(size), data_((size_t) size.getDataSize())
 { }
 
 MatrixFragment::element_t &DenseMatrixFragment::at(int i, int j) {
@@ -88,6 +80,68 @@ std::shared_ptr<DenseMatrixFragment> DenseMatrixFragment::createMatrixForMerge(
 
     return shared_ptr<DenseMatrixFragment>(new DenseMatrixFragment(dscr));
 }
+
+DenseMatrixFragment &DenseMatrixFragment::operator+=(DeferredSparseDenseMultiplication AtB) {
+    AtB.addTo(*this);
+    return *this;
+}
+
+DenseMatrixFragment &DenseMatrixFragment::operator=(DeferredSparseDenseMultiplication AtB) {
+    AtB.writeTo(*this);
+    return *this;
+}
+
+DenseMatrixFragment &DenseMatrixFragment::operator=(element_t initialValue) {
+    std::fill(data_.begin(), data_.end(), initialValue);
+    return *this;
+}
+
+int DenseMatrixFragment::countGreaterOrEqual(element_t threshold) const {
+    int res = 0;
+    for (int i = 0; i < data_.size(); ++i)
+        if (data_[i] >= threshold)
+            ++res;
+    return res;
+}
+
+std::ostream &operator<<(std::ostream &stream, const DenseMatrix &matrix) {
+    // TODO delete
+    stream << "matrix[" << matrix.size().matrixWidth() << "x" << matrix.size().matrixHeight()
+    << "] with #entries = " << matrix.data_.size() << ", pCol = " << matrix.size().pCol()
+            << ", pRow = " << matrix.size().pRow() << ", kCol = " << matrix.size().kCol()
+            << ", kRow = " << matrix.size().kRow() << endl;
+
+    for (int i = 0; i < matrix.size().pRow(); ++i) {
+        for (int j = 0; j < matrix.size().matrixWidth(); ++j)
+            stream << "\t" << "_";
+        stream << "\n";
+    }
+
+    for (int i = matrix.size().pRow(); i < matrix.size().matrixHeight(); ++i) {
+        for (int j = 0; j < matrix.size().pCol(); ++j)
+            stream << "\t" << "_";
+
+        for (int j = matrix.size().pCol(); j < matrix.size().kCol(); ++j)
+            stream << "\t" << matrix.at(i, j);
+
+        for (int j = matrix.size().kCol(); j < matrix.size().matrixWidth(); ++j)
+            stream << "\t" << "_";
+
+        stream << "\n";
+    }
+
+    for (int i = matrix.size().kRow(); i < matrix.size().matrixHeight(); ++i) {
+        for (int j = 0; j < matrix.size().matrixWidth(); ++j)
+            stream << "\t" << "_";
+        stream << "\n";
+    }
+
+    return stream;
+}
+
+
+
+
 
 
 

@@ -9,17 +9,20 @@
 #include "MatrixOperations.h"
 
 #include <vector>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/base_object.hpp>
 
 
-class DenseMatrixFragment;
 typedef DenseMatrixFragment DenseMatrix;
 
 class DenseMatrixFragment : public Matrix {
+    friend class DeferredSparseDenseMultiplication;
+    friend std::ostream& operator<< (std::ostream& stream, const DenseMatrix& matrix);
 public:
+    DenseMatrixFragment() { }
+
     DenseMatrixFragment(const MatrixFragmentDescriptor &size);
 
-    // Information about matrix dimensions
-    MatrixFragmentDescriptor _size;
     const MatrixFragmentDescriptor &size() const;
 
     element_t &at(int i, int j);
@@ -37,12 +40,27 @@ public:
             DeferredSparseDenseMultiplication AtB
     );
 
+    DenseMatrixFragment &operator=(
+            element_t initialValue
+    );
+
+    int countGreaterOrEqual(element_t threshold) const;
+
 private:
+    // Information about matrix dimensions
+    MatrixFragmentDescriptor size_;
+
     std::vector<double> data_;
 
+    friend class boost::serialization::access;
+
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    void serialize(Archive &ar, const unsigned int) {
+        ar & boost::serialization::base_object<MatrixFragment>(*this);
+        ar & size_ & data_;
+    };
 };
 
+std::ostream& operator<< (std::ostream& stream, const DenseMatrix& matrix);
 
 #endif //MATRIXMUL_DENSEMATRIX_H

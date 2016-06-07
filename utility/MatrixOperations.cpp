@@ -6,11 +6,11 @@
 
 
 void DeferredSparseDenseMultiplication::addTo(DenseMatrixFragment &C) {
-
+    exec(C, false);
 }
 
 void DeferredSparseDenseMultiplication::writeTo(DenseMatrixFragment &C) {
-
+    exec(C, true);
 }
 
 DeferredSparseDenseMultiplication operator*(std::shared_ptr<SparseMatrixFragment> A,
@@ -21,3 +21,14 @@ DeferredSparseDenseMultiplication operator*(std::shared_ptr<SparseMatrixFragment
 DeferredSparseDenseMultiplication::DeferredSparseDenseMultiplication(
         std::shared_ptr<SparseMatrixFragment> A,
         std::shared_ptr<DenseMatrixFragment> B) : A(A), B(B) { }
+
+void DeferredSparseDenseMultiplication::exec(DenseMatrixFragment &C, bool override) {
+
+    if (override)
+        C = 0.0;
+
+    // TODO Perform multiplication
+}
+
+
+

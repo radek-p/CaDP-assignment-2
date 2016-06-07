@@ -32,3 +32,9 @@ void InnerABCAlgorithm::step6_performSingleMultiplication() {
         shiftMatrixA(); // TODO Maybe not perform last shift
     }
 }
+
+void InnerABCAlgorithm::step7_setResultAsNewBMatrix() {
+    // TODO Send C and set as B
+
+    *C = 0;
+}

@@ -12,14 +12,15 @@ find_package(MPI REQUIRED)
 include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 
 # Find Boost library
-#set(CMAKE_LIBRARY_PATH /opt/local/lib {CMAKE_LIBRARY_PATH})
-find_package(Boost REQUIRED)
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+set(Boost_LIBRARY_DIR /opt/local/lib/)
+find_package(Boost COMPONENTS mpi serialization REQUIRED)
+include_directories(${Boost_INCLUDE_DIR})
+link_directories(${Boost_LIBRARY_DIR})
 
 # TODO remove -Wno-??? flags later, when the project is more mature
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-private-field")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-private-field -Wno-unused-local-typedef")
 
-INCLUDE_DIRECTORIES(. utility algorithms)
+include_directories(. utility algorithms)
 set(
         FOREIGN_FILES
         densematgen.h
@@ -44,6 +45,6 @@ set(
         utility/MatrixOperations.cpp
 )
 add_executable(matrixmul matrixmul.cpp ${SOURCE_FILES} ${FOREIGN_FILES})
-target_link_libraries(matrixmul ${MPI_C_LIBRARIES})
+target_link_libraries(matrixmul ${MPI_C_LIBRARIES} ${Boost_LIBRARIES})
 
 

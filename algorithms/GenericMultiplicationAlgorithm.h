@@ -9,6 +9,7 @@
 
 #include <string>
 #include <memory>
+#include <boost/mpi/communicator.hpp>
 
 #include "../utility/SparseMatrixFragment.h"
 #include "../utility/MatrixFragment.h"
@@ -36,12 +37,12 @@ public:
     GenericMultiplicationAlgorithm(int c);
 
     void step1_loadMatrixA(const string &fileName);
-    void step2_distributeMatrixA();
+    virtual void step2_distributeMatrixA() = 0;
     void step3_generateMatrixB(int seed);
     virtual void step4_redistributeMatrixA() = 0;
     virtual void step5_redistributeMatrixB() { };
     virtual void step6_performSingleMultiplication() = 0;
-    void step7_setResultAsNewBMatrix();
+    virtual void step7_setResultAsNewBMatrix() = 0;
     void step8_countAndPrintGe(double geElement);
     void step9_printResultMatrix();
 
@@ -51,20 +52,26 @@ public:
     // Partitions interval matrixSize into p blocks of similar size.
     static int getFirstIdx(int blockIdx, int matrixSize, int p);
 
+    static std::vector<int> prepareDivision(int matrixSize, int p);
+
+//    template<class MatrixType>
+//    static void splitSparseMatrixByRows(const SparseMatrixFragment &mat, std::vector<std::shared_ptr<SparseMatrixFragment>> &res, int p);
+//    static void splitSparseMatrixByCols(const shared_ptr<const SparseMatrixFragment> mat, std::vector<std::shared_ptr<SparseMatrixFragment>> &res, int p);
+
 protected:
-    MatrixFragment::MatrixFragmentDescriptor size_;
+//    MatrixFragment::MatrixFragmentDescriptor size_;
+
     // Replication factor c
     int replicationFactor_;
     // int matrixSize;
     int numReplicationGroups;
 
-    int rankGlobal_    = INVALID_PARAMETER_VALUE;
-    int numProcGlobal_ = INVALID_PARAMETER_VALUE;
+    boost::mpi::communicator world;
 
     int c()     const { return replicationFactor_; };
-    int p()     const { return numProcGlobal_;     };
-    int pDivC() const { return numProcGlobal_ / replicationFactor_; };
-    int j()     const { return rankGlobal_; };
+    int p()     const { return world.size(); };
+    int pDivC() const { return world.size() / replicationFactor_; };
+    int j()     const { return world.rank(); };
 
     //    int rankReplicationGroup    = INVALID_PARAMETER_VALUE;
     //    int numProcReplicationGroup = INVALID_PARAMETER_VALUE;

@@ -7,105 +7,39 @@
 
 #include <iostream>
 #include <fstream>
+#include <cassert>
 
 using namespace std;
 
-//SparseMatrix::SparseMatrix(std::string sourceFile, bool storeInColumnMajorOrder) {
-//    loadFromFile(sourceFile, storeInColumnMajorOrder);
-//}
-
-//double SparseMatrix::at(int i, int j) const {
-//    if (!rowMajor)
-//        swap(i, j);
-//
-//    map<int, double>::const_iterator iterator    = data[i].find(j);
-//    map<int, double>::const_iterator endIterator = data[i].end();
-//
-//    return (iterator == endIterator) ? 0.0 : iterator->second;
-//}
-
-//std::ostream &operator<<(std::ostream &stream, const SparseMatrix &matrix) {
-//    for (int rowIdx = 0; rowIdx < matrix.height; ++rowIdx) {
-//        if (matrix.width > 0) {
-//            stream << matrix.at(rowIdx, 0);
-//        }
-//        for (int colIdx = 1; colIdx < matrix.width; ++colIdx) {
-//            stream << "\t" << matrix.at(rowIdx, colIdx);
-//        }
-//        stream << "\n";
-//    }
-//    return stream;
-//}
-
-//SparseMatrixFragment::SparseMatrixFragment(string sourceFile) {
-//
-//}
-
-
-//void SparseMatrix::loadFromFile(std::string sourceFile, bool storeInColumnMajorOrder) {
-//    ifstream matrixSource;
-//    matrixSource.open(sourceFile);
-//    matrixSource >> width >> height >> nnz >> maxItemsPerRow;
-//
-//    vector<double> nnzEntries;
-//
-//    double nnzEntry;
-//    for (int i = 0; i < nnz; ++i) {
-//        matrixSource >> nnzEntry;
-//        nnzEntries.push_back(nnzEntry);
-//    }
-//    vector<int> rowIntervals;
-//
-//    int tmp2;
-//    for (int i = 0; i <= height; ++i) {
-//        matrixSource >> tmp2;
-//        rowIntervals.push_back(tmp2);
-//    }
-//
-//    int tmpColIdx;
-//    if (storeInColumnMajorOrder) {
-//        rowMajor = false;
-//        int nnzEntryIdx = 0;
-//        for (int colIdx = 0; colIdx < width; ++colIdx) {
-//            data.push_back(map<int, double>());
-//        }
-//
-//        for (int rowIdx = 0; rowIdx < height; ++rowIdx) {
-//            const int size = rowIntervals[rowIdx + 1] - rowIntervals[rowIdx];
-//            for (int rowElemIdx = 0; rowElemIdx < size; ++rowElemIdx) {
-//                matrixSource >> tmpColIdx;
-//                data[tmpColIdx][rowIdx] = nnzEntries[nnzEntryIdx];
-//                nnzEntryIdx++;
-//            }
-//        }
-//    } else {
-//        rowMajor = true;
-//        int nnzEntryIdx = 0;
-//        for (int rowIdx = 0; rowIdx < height; ++rowIdx) {
-//            data.push_back(map<int, double>());
-//            int size = rowIntervals[rowIdx + 1] - rowIntervals[rowIdx];
-//            for (int rowElemIdx = 0; rowElemIdx < size; ++rowElemIdx) {
-//                matrixSource >> tmpColIdx;
-//                data[rowIdx][tmpColIdx] = nnzEntries[nnzEntryIdx];
-//                nnzEntryIdx++;
-//            }
-//        }
-//    }
-//
-//    matrixSource.close();
-//}
-
 
 std::ostream &operator<<(std::ostream &stream, const SparseMatrix &matrix) {
-    return stream;
-}
 
-template<class Archive>
-void SparseMatrixFragment::serialize(Archive &ar, const unsigned int version) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-value"
-    ar & entries & rowIntervals & columns;
-#pragma clang diagnostic pop
+    // TODO delete
+    stream << "matrix[" << matrix.size().matrixWidth() << "x" << matrix.size().matrixHeight()
+           << "] with #entries = " << matrix.entries.size() << ", nnz = " << matrix.size().nnz() << endl;
+
+    int rowBeginIncl = matrix.rowIntervals[0], rowEndExcl;
+    for (int rowIdx = 0; rowIdx < matrix.size().matrixHeight(); ++rowIdx) {
+        rowEndExcl = matrix.rowIntervals[rowIdx+1];
+
+        int colIdx = 0;
+        for (int itemIdx = rowBeginIncl; itemIdx < rowEndExcl; ++itemIdx) {
+            while (colIdx < matrix.columns[itemIdx]) {
+                stream << "\t" << 0.0;
+                ++colIdx;
+            }
+            stream << "\t" << matrix.entries[itemIdx];
+            ++colIdx;
+        }
+        while (colIdx < matrix.size().matrixWidth()) {
+            stream << "\t" << 0.0;
+            ++colIdx;
+        }
+        stream << "\n";
+        rowBeginIncl = rowEndExcl;
+    }
+
+    return stream;
 }
 
 const SparseMatrixFragment::SparseMatrixFragmentDescriptor &SparseMatrixFragment::size() const {
@@ -116,7 +50,7 @@ SparseMatrixFragment::SparseMatrixFragment(const std::string &fileName) {
     loadFromFile(fileName);
 }
 
-void SparseMatrixFragment::loadFromFile(const std::string &fileName) {
+void SparseMatrixFragment::loadFromFilePrivate(const std::string &fileName) {
     ifstream matrixSource;
     matrixSource.open(fileName);
     matrixSource >> size_.matrixWidth_
@@ -124,22 +58,25 @@ void SparseMatrixFragment::loadFromFile(const std::string &fileName) {
     >> size_.nnz_
     >> size_.maxItemsPerRow_;
 
-    double nnzEntry;
+    size_.fragmentHeight_ = size_.matrixHeight_;
+    size_.fragmentWidth_  = size_.matrixWidth_;
+
+    size_.pCol_ = 0;
+    size_.pRow_ = 0;
+
+    entries.resize((size_t) size().nnz());
+    rowIntervals.resize((size_t) (size().matrixHeight() + 1));
+    columns.resize((size_t) size().nnz());
     for (int i = 0; i < size().nnz(); ++i) {
-        matrixSource >> nnzEntry;
-        entries.push_back(nnzEntry);
+        matrixSource >> entries[i];
     }
 
-    int tmp2;
     for (int i = 0; i <= size().matrixHeight(); ++i) {
-        matrixSource >> tmp2;
-        rowIntervals.push_back(tmp2);
+        matrixSource >> rowIntervals[i];
     }
 
-    int tmpColIdx;
     for (int i = 0; i < size().nnz(); ++i) {
-        matrixSource >> tmpColIdx;
-        columns.push_back(tmpColIdx);
+        matrixSource >> columns[i];
     }
 
     matrixSource.close();
@@ -160,18 +97,6 @@ std::shared_ptr<SparseMatrixFragment> SparseMatrixFragment::mergeCols(const std:
     setMergeDimensions(fragmentsToConcat, res->size_);
 
     // TODO Implement sparse column merge
-
-    return res;
-}
-
-std::shared_ptr<SparseMatrixFragment> SparseMatrixFragment::rowSubmatrix(int firstRowIncl, int lastRowExcl) const {
-    std::shared_ptr<SparseMatrixFragment> res = shared_ptr<SparseMatrixFragment>(new SparseMatrixFragment);
-
-    return res;
-}
-
-std::shared_ptr<SparseMatrixFragment> SparseMatrixFragment::columnSubmatrix(int firstColIncl, int lastColExcl) const {
-    std::shared_ptr<SparseMatrixFragment> res = shared_ptr<SparseMatrixFragment>(new SparseMatrixFragment);
 
     return res;
 }
@@ -200,6 +125,102 @@ void SparseMatrixFragment::setMergeDimensions(const std::vector<SparseMatrixFrag
     descr.pRow(minPRow);
     descr.kCol(maxKCol);
     descr.kRow(maxKRow);
+}
+
+std::shared_ptr<SparseMatrixFragment> SparseMatrixFragment::loadFromFile(const std::string &fileName) {
+    auto res = shared_ptr<SparseMatrixFragment>(new SparseMatrixFragment());
+    res->loadFromFilePrivate(fileName);
+
+    return res;
+}
+
+void SparseMatrixFragment::splitIntoColumnGroups(
+        const std::vector<int> &rowDivision,
+        vector<SparseMatrixFragment> &res) const {
+
+    assert(rowIntervals.size() > 0);
+    assert(!size().isFragment());
+    assert(rowDivision[rowDivision.size() - 1] == size().matrixWidth());
+
+    res.resize(rowDivision.size() - 1);
+
+    int numBlocks = static_cast<int>(rowDivision.size() - 1);
+    for (int i = 0; i < numBlocks; ++i) {
+        res[i] = SparseMatrixFragment(size());
+        res[i].size_.pCol(rowDivision[i]);
+        res[i].size_.kCol(rowDivision[i+1]);
+        res[i].rowIntervals.push_back(0);
+        res[i].size_.nnz_ = 0;
+    }
+
+    int rowBeginIncl = rowIntervals[0], rowEndExcl;
+    // Iterate by rows.
+    for (int i = 0; i < size().matrixHeight(); ++i) {
+        rowEndExcl = rowIntervals[i+1];
+
+        // Read one row and copy its elements to appropriate submatrices.
+        int dividerIdx = 0;
+        for (int elEntryIdx = rowBeginIncl; elEntryIdx < rowEndExcl; ++elEntryIdx) {
+            // Current element is in entries[elEntryIdx]; columns[elEntryIdx];
+            while (rowDivision[dividerIdx+1] <= columns[elEntryIdx])
+                ++dividerIdx;
+
+            res[dividerIdx].entries.push_back(entries[elEntryIdx]);
+            res[dividerIdx].columns.push_back(columns[elEntryIdx]);
+            res[dividerIdx].size_.nnz_++;
+        }
+
+        // Finalize each row entry in each submatrix
+        for (auto &resItem : res) {
+            resItem.rowIntervals.push_back(static_cast<int>(resItem.entries.size()));
+        }
+        rowBeginIncl = rowEndExcl;
+    }
+}
+
+SparseMatrixFragment::SparseMatrixFragment(const SparseMatrixFragmentDescriptor &descriptor) {
+    size_ = descriptor;
+}
+
+void SparseMatrixFragment::splitIntoRowGroups(const vector<int> &columnDivision, vector<SparseMatrixFragment> &res) const {
+    assert(rowIntervals.size() == size().matrixHeight());
+    assert(!size().isFragment());
+    assert(columnDivision[columnDivision.size() - 1] == size().matrixHeight());
+
+    res.resize(columnDivision.size() - 1);
+
+//    int numBlocks = static_cast<int>(columnDivision.size() - 1);
+//    for (int i = 0; i < numBlocks; ++i) {
+//        res[i] = SparseMatrixFragment(size());
+//        res[i].size_.pRow(rowDivision[i]);
+//        res[i].size_.kRow(rowDivision[i+1]);
+//        res[i].rowIntervals.push_back(0);
+//        res[i].size_.nnz_ = 0;
+//    }
+
+//    int rowBeginIncl = rowIntervals[0], rowEndExcl;
+//    // Iterate by rows.
+//    for (int i = 0; i < size().matrixHeight(); ++i) {
+//        rowEndExcl = rowIntervals[i+1];
+//
+//        // Read one row and copy its elements to appropriate submatrices.
+//        int dividerIdx = 0;
+//        for (int elEntryIdx = rowBeginIncl; elEntryIdx < rowEndExcl; ++elEntryIdx) {
+//            // Current element is in entries[elEntryIdx]; columns[elEntryIdx];
+//            while (rowDivision[dividerIdx+1] <= columns[elEntryIdx])
+//                ++dividerIdx;
+//
+//            res[dividerIdx].entries.push_back(entries[elEntryIdx]);
+//            res[dividerIdx].columns.push_back(columns[elEntryIdx]);
+//            res[dividerIdx].size_.nnz_++;
+//        }
+//
+//        // Finalize each row entry in each submatrix
+//        for (auto &resItem : res) {
+//            resItem.rowIntervals.push_back(static_cast<int>(resItem.entries.size()));
+//        }
+//        rowBeginIncl = rowEndExcl;
+//    }
 }
 
 

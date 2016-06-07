@@ -20,6 +20,8 @@ public:
 private:
     std::shared_ptr<SparseMatrixFragment> A;
     std::shared_ptr<DenseMatrixFragment> B;
+
+    void exec(DenseMatrixFragment &C, bool override = false);
 };
 
 DeferredSparseDenseMultiplication operator*(
