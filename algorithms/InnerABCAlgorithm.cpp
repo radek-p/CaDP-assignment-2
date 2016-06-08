@@ -6,16 +6,22 @@
 #include "InnerABCAlgorithm.h"
 #include <boost/mpi/collectives.hpp>
 #include <boost/serialization/shared_ptr.hpp>
+#include <memory>
 
+using namespace std;
 
 InnerABCAlgorithm::InnerABCAlgorithm(int _c) :
         GenericMultiplicationAlgorithm(_c),
         replicationGroup(world.split(j() / c(), j() % c())),
-        orthogonalGroup(world.split(j() % c(), j() / c()))
+        orthogonalGroup (world.split(j() % c(), j() / c()))
 {
-    cout << "InnerABC algorithm process"
-        << "(" << replicationGroup.size() << ", " << orthogonalGroup.size()
-        << ") <- (" << replicationGroup.rank() << ", " << orthogonalGroup.rank() << ")" << endl;
+    if (p() % (c() * c()) != 0) {
+        cerr << "Error: When using InnerABC algorithm, number of processes must be divisible by c*c." << endl;
+        exit(5);
+    }
+//    cout << "InnerABC algorithm process"
+//        << "(" << replicationGroup.size() << ", " << orthogonalGroup.size()
+//        << ") <- (" << replicationGroup.rank() << ", " << orthogonalGroup.rank() << ")" << endl;
 }
 
 bool InnerABCAlgorithm::splitAInRowGroups() {
@@ -29,11 +35,11 @@ void InnerABCAlgorithm::step4_redistributeMatrixA() {
     boost::mpi::all_gather(replicationGroup, A, fragments);
     A = SparseMatrixFragment::mergeRows(fragments);
 
-    world.barrier();
-    if (world.rank() == 6) {
-        cout << "replication group leader with world rank: "
-        << world.rank() << " gathered A matrix" << *A << endl;
-    }
+//    world.barrier();
+//    if (world.rank() == 6) {
+//        cout << "replication group leader with world rank: "
+//        << world.rank() << " gathered A matrix" << *A << endl;
+//    }
 
     for (int i = 0; i < q() * l(); ++i) {
         shiftMatrixA();
@@ -46,11 +52,11 @@ void InnerABCAlgorithm::step5_redistributeMatrixB() {
     boost::mpi::all_gather(replicationGroup, B, fragments);
     B = DenseMatrixFragment::mergeCols(fragments);
 
-    world.barrier();
-    if (world.rank() == 0) {
-        cout << "replication group leader with world rank: "
-        << world.rank() << " gathered B matrix" << *B << endl;
-    }
+//    world.barrier();
+//    if (world.rank() == 0) {
+//        cout << "replication group leader with world rank: "
+//        << world.rank() << " gathered B matrix" << *B << endl;
+//    }
 }
 
 void InnerABCAlgorithm::step6_performSingleMultiplication() {
@@ -82,7 +88,6 @@ void InnerABCAlgorithm::step7_setResultAsNewBMatrix() {
     }
 
     B = DenseMatrix::mergeRows(partsOfMatrixCFlattened);
-//    cout << "After gather we have partial result B: " << *B << endl;
     C.resize(0);
 }
 
@@ -122,7 +127,7 @@ void InnerABCAlgorithm::step9_printResultMatrix() {
 
         if (orthogonalGroup.rank() == 0) {
             B = DenseMatrix::mergeCols(partsOfResult);
-            cout << "After gather we have final result B: " << *B << endl;
+            cout << *B << endl;
         }
     }
 }
@@ -137,6 +142,6 @@ void InnerABCAlgorithm::step8_countAndPrintGe(double geElement) {
     boost::mpi::reduce(world, localCount, globalCount, std::plus<int>(), 0);
 
     if (isCoordinator()) {
-        cout << "GE count: " << globalCount;
+        cout << globalCount << endl;
     }
 }

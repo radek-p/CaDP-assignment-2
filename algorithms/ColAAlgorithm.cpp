@@ -87,7 +87,6 @@ void ColAAlgorithm::step6_performSingleMultiplication() {
 
 void ColAAlgorithm::step7_setResultAsNewBMatrix() {
     B = C;
-    *C = 0.0;
 }
 
 void ColAAlgorithm::step9_printResultMatrix() {
@@ -95,7 +94,7 @@ void ColAAlgorithm::step9_printResultMatrix() {
         vector<shared_ptr<DenseMatrixFragment>> submatrices((size_t) p());
         boost::mpi::gather(world, C, submatrices, 0);
 
-        cout << "Gathered matrices: " << submatrices.size() << endl;
+//        cout << "Gathered matrices: " << submatrices.size() << endl;
 
         auto result = DenseMatrix::mergeCols(submatrices);
         cout << *result << endl;
@@ -128,6 +127,6 @@ void ColAAlgorithm::step8_countAndPrintGe(double geElement) {
     boost::mpi::reduce(world, localCount, globalCount, std::plus<int>(), 0);
 
     if (isCoordinator()) {
-        cout << "GE count: " << globalCount;
+        cout << globalCount << endl;
     }
 }

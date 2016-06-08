@@ -12,6 +12,8 @@
 #include "GenericMultiplicationAlgorithm.h"
 #include "densematgen.h"
 
+using namespace std;
+
 
 GenericMultiplicationAlgorithm::GenericMultiplicationAlgorithm(int c) : replicationFactor_(c) {
     // Get information about size and position in MPI_COMM_WORLD

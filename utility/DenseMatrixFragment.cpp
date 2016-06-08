@@ -105,11 +105,11 @@ int DenseMatrixFragment::countGreaterOrEqual(element_t threshold) const {
 }
 
 std::ostream &operator<<(std::ostream &stream, const DenseMatrix &matrix) {
-    // TODO delete
-    stream << "matrix[" << matrix.size().matrixWidth() << "x" << matrix.size().matrixHeight()
-    << "] with #entries = " << matrix.data_.size() << ", pCol = " << matrix.size().pCol()
-            << ", pRow = " << matrix.size().pRow() << ", kCol = " << matrix.size().kCol()
-            << ", kRow = " << matrix.size().kRow() << endl;
+    stream << matrix.size().matrixHeight() << "\t" << matrix.size().matrixWidth() << endl;
+//    stream << "matrix[" << matrix.size().matrixWidth() << "x" << matrix.size().matrixHeight()
+//    << "] with #entries = " << matrix.data_.size() << ", pCol = " << matrix.size().pCol()
+//            << ", pRow = " << matrix.size().pRow() << ", kCol = " << matrix.size().kCol()
+//            << ", kRow = " << matrix.size().kRow() << endl;
 
     for (int i = 0; i < matrix.size().pRow(); ++i) {
         for (int j = 0; j < matrix.size().matrixWidth(); ++j)

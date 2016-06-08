@@ -15,7 +15,6 @@
 #include "../utility/MatrixFragment.h"
 #include "../utility/DenseMatrixFragment.h"
 
-using namespace std;
 
 /**
  * Class that implements common parts of
@@ -32,11 +31,15 @@ using namespace std;
  */
 class GenericMultiplicationAlgorithm {
 private:
-    static const int INVALID_PARAMETER_VALUE = -1;
+//#ifdef DEBUG
+//    static const bool DEBUG = true;
+//#else
+//    static const bool DEBUG = false;
+//#endif
 public:
     GenericMultiplicationAlgorithm(int c);
 
-    void step1_loadMatrixA(const string &fileName);
+    void step1_loadMatrixA(const std::string &fileName);
     void step2_distributeMatrixA();
     void step3_generateMatrixB(int seed);
     virtual void step4_redistributeMatrixA() = 0;
@@ -59,21 +62,12 @@ public:
 
     enum tags {
         REDISTRIBUTE_A = 23,
-        REDISTRIBUTE_B = 48,
-        SHIFT_A = 67,
+        SHIFT_A        = 42,
     };
 
-//    template<class MatrixType>
-//    static void splitSparseMatrixByRows(const SparseMatrixFragment &mat, std::vector<std::shared_ptr<SparseMatrixFragment>> &res, int p);
-//    static void splitSparseMatrixByCols(const shared_ptr<const SparseMatrixFragment> mat, std::vector<std::shared_ptr<SparseMatrixFragment>> &res, int p);
-
 protected:
-//    MatrixFragment::MatrixFragmentDescriptor size_;
-
     // Replication factor c
     int replicationFactor_;
-    // int matrixSize;
-    int numReplicationGroups;
 
     boost::mpi::communicator world;
 
@@ -82,24 +76,18 @@ protected:
     int pDivC() const { return world.size() / replicationFactor_; };
     int j()     const { return world.rank(); };
 
-    //    int rankReplicationGroup    = INVALID_PARAMETER_VALUE;
-    //    int numProcReplicationGroup = INVALID_PARAMETER_VALUE;
-    //
-    //    int rankRowGroup    = INVALID_PARAMETER_VALUE;
-    //    int numProcRowGroup = INVALID_PARAMETER_VALUE;
-
     // Pointer to whole matrix A, is is used only by
     // the coordinator and is destroyed in step2
-    shared_ptr<SparseMatrix> wholeA;
+    std::shared_ptr<SparseMatrix> wholeA;
 
     // Initial part of A matrix, its size is
-    shared_ptr<SparseMatrixFragment> initialAPart;
+    std::shared_ptr<SparseMatrixFragment> initialAPart;
 
     // Pointers to parts of respective matrices.
     // In InnerABC size of each part is 1/(p/c) of size of the whole matrix,
     // but in ColA size of B is 1/p of size of whole B.
-    shared_ptr<SparseMatrixFragment> A;
-    shared_ptr<DenseMatrixFragment>  B;
+    std::shared_ptr<SparseMatrixFragment> A;
+    std::shared_ptr<DenseMatrixFragment>  B;
 };
 
 #endif //MATRIXMUL_GENERICMULTIPLICATIONALGORITHM_H
