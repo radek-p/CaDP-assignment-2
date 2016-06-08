@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
             algorithm->step9_printResultMatrix();
         }
         if (algorithm->isCoordinator()) {
-            cerr << "\n\nRunime statistics:\n"
+            cerr << "\nRunime statistics:\n"
             << "\tinitial distribution phase:\t" << (comm_end - comm_start) << "\n"
             << "\t product computation phase:\t" << (comp_end - comp_start) << endl;
         }

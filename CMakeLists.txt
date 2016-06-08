@@ -17,8 +17,7 @@ find_package(Boost COMPONENTS mpi serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 
-# TODO remove -Wno-??? flags later, when the project is more mature
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-private-field -Wno-unused-local-typedef")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
 
 include_directories(. utility algorithms)
 set(

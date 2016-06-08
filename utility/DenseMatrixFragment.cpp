@@ -13,11 +13,6 @@ const DenseMatrixFragment::MatrixFragmentDescriptor &DenseMatrixFragment::size()
     return size_;
 }
 
-//template<class Archive>
-//void DenseMatrixFragment::serialize(Archive & ar, const unsigned int version) {
-//    ar & _size & data_;
-//}
-
 std::shared_ptr<DenseMatrixFragment> DenseMatrixFragment::mergeRows(
         const std::vector<shared_ptr<DenseMatrixFragment>> &fragmentsToConcat) {
 
@@ -98,7 +93,7 @@ DenseMatrixFragment &DenseMatrixFragment::operator=(element_t initialValue) {
 
 int DenseMatrixFragment::countGreaterOrEqual(element_t threshold) const {
     int res = 0;
-    for (int i = 0; i < data_.size(); ++i)
+    for (size_t i = 0; i < data_.size(); ++i)
         if (data_[i] >= threshold)
             ++res;
     return res;

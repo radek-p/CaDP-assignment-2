@@ -90,7 +90,9 @@ void GenericMultiplicationAlgorithm::step2_distributeMatrixA() {
 
     if (isCoordinator()) {
         vector<shared_ptr<SparseMatrixFragment>> parts(0);
-        auto division = prepareDivision(wholeA->size().matrixWidth(), p()); // TODO Width / height
+        // We assume that both matrices are square, so we always prepare the division using matrix width.
+        // This should be changed, when adapting the program to more general case.
+        auto division = prepareDivision(wholeA->size().matrixWidth(), p());
         wholeA->splitIntoGroups(division, parts, splitAInRowGroups());
 
         vector<string> serializedMatrices(0);
@@ -105,7 +107,7 @@ void GenericMultiplicationAlgorithm::step2_distributeMatrixA() {
         boost::mpi::broadcast(world, maxPartSize, 0);
 
         allMatricesTogether.resize(parts.size() * maxPartSize);
-        for (int i = 0; i < parts.size(); ++i) {
+        for (size_t i = 0; i < parts.size(); ++i) {
             std::copy(
                     &serializedMatrices[i][0],
                     (&serializedMatrices[i][0]) + serializedMatrices[i].length(),

@@ -36,7 +36,7 @@ public:
         friend class boost::serialization::access;
 
         template<class Archive>
-        void serialize(Archive &ar, const unsigned int version) {
+        void serialize(Archive &ar, const unsigned int) {
             ar & boost::serialization::base_object<MatrixFragmentDescriptor>(*this);
             ar & maxItemsPerRow_ & nnz_;
         }
@@ -73,7 +73,7 @@ private:
     friend class boost::serialization::access;
 
     template<class Archive>
-    void serialize(Archive &ar, const unsigned int version) {
+    void serialize(Archive &ar, const unsigned int) {
         ar & boost::serialization::base_object<MatrixFragment>(*this);
         ar & size_ & entries & rowIntervals & columns;
     }

@@ -109,7 +109,7 @@ std::shared_ptr<SparseMatrixFragment> SparseMatrixFragment::mergeRows(const std:
         res->rowIntervals.push_back(0);
     }
 
-    for (int partIdx = 0; partIdx < fragmentsToConcat.size(); ++partIdx) {
+    for (size_t partIdx = 0; partIdx < fragmentsToConcat.size(); ++partIdx) {
         auto const &part = fragmentsToConcat[partIdx];
         for (int rowIdx = part->size().pRow(); rowIdx < part->size().kRow(); ++rowIdx) {
 
@@ -145,7 +145,7 @@ std::shared_ptr<SparseMatrixFragment> SparseMatrixFragment::mergeCols(const std:
 
     res->rowIntervals.push_back(0);
     for (int rowIdx = 0; rowIdx < res->size().matrixHeight(); ++rowIdx) {
-        for (int partIdx = 0; partIdx < fragmentsToConcat.size(); ++partIdx) {
+        for (size_t partIdx = 0; partIdx < fragmentsToConcat.size(); ++partIdx) {
             auto const &part = fragmentsToConcat[partIdx];
             for (int entryIdx = part->rowIntervals[rowIdx]; entryIdx < part->rowIntervals[rowIdx+1]; ++entryIdx) {
                 res->entries.push_back(part->entries[entryIdx]);
@@ -235,7 +235,7 @@ SparseMatrixFragment::SparseMatrixFragment(const SparseMatrixFragmentDescriptor 
 }
 
 void SparseMatrixFragment::splitIntoRowGroups(const vector<int> &columnDivision, vector<shared_ptr<SparseMatrixFragment>> &res) const {
-    assert(rowIntervals.size() - 1 == size().matrixHeight());
+    assert((int) rowIntervals.size() - 1 == size().matrixHeight());
     assert(!size().isFragment());
     assert(columnDivision[columnDivision.size() - 1] == size().matrixHeight());
 
