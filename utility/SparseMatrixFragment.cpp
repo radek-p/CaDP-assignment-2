@@ -14,9 +14,8 @@ using namespace std;
 
 std::ostream &operator<<(std::ostream &stream, const SparseMatrix &matrix) {
 
-    // TODO delete
-    stream << "matrix[" << matrix.size().matrixWidth() << "x" << matrix.size().matrixHeight()
-           << "] with #entries = " << matrix.entries.size() << ", nnz = " << matrix.size().nnz() << endl;
+//    stream << "matrix[" << matrix.size().matrixWidth() << "x" << matrix.size().matrixHeight()
+//           << "] with #entries = " << matrix.entries.size() << ", nnz = " << matrix.size().nnz() << endl;
 
     for (int i = 0; i < matrix.size().pRow(); ++i) {
         for (int j = 0; j < matrix.size().matrixWidth(); ++j)
@@ -161,7 +160,6 @@ std::shared_ptr<SparseMatrixFragment> SparseMatrixFragment::mergeCols(const std:
 void SparseMatrixFragment::setMergeDimensions(const std::vector<std::shared_ptr<SparseMatrixFragment>> &fragmentsToConcat,
                                               SparseMatrixFragmentDescriptor &descr) {
 
-    // FIXME Maybe remove copy / paste code from DenseMatrixFragment
     assert(fragmentsToConcat.size() > 0);
 
     const auto & size = fragmentsToConcat[0]->size();

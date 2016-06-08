@@ -74,7 +74,7 @@ void ColAAlgorithm::step6_performSingleMultiplication() {
 
     for (int i = 0; i < pDivC(); ++i) {
         *C += A * B;
-        shiftMatrixA(); // TODO maybe do not perform last shift
+        shiftMatrixA();
     }
 
 //    for (int i = 0; i < world.size(); ++i) {
