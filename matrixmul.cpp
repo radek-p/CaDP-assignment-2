@@ -76,9 +76,9 @@ int main(int argc, char *argv[]) {
     GenericMultiplicationAlgorithm * algorithm;
 
     /* Select appropriate algorithm of parallel multiplication */
-//    if (use_inner) { algorithm = new InnerABCAlgorithm(repl_fact); }
-//    else           { algorithm = new ColAAlgorithm    (repl_fact); }
-    algorithm = new ColAAlgorithm    (repl_fact);
+    if (use_inner) { algorithm = new InnerABCAlgorithm(repl_fact); }
+    else           { algorithm = new ColAAlgorithm    (repl_fact); }
+//    algorithm = new ColAAlgorithm    (repl_fact);
 
     if ((gen_seed == -1) || (algorithm->isCoordinator() && matrixASourceFile.size() == 0)) {
         fprintf(stderr, "error: missing seed or sparse matrix file; exiting\n");
@@ -127,7 +127,6 @@ int main(int argc, char *argv[]) {
     /* Prepare initial distribution of matrices */ {
         algorithm->step2_distributeMatrixA();
         algorithm->step3_generateMatrixB(gen_seed);
-//        return 0;
     }
 
     world.barrier();

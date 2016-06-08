@@ -11,8 +11,7 @@
 
 class InnerABCAlgorithm : public GenericMultiplicationAlgorithm {
 public:
-    InnerABCAlgorithm(int c) :
-            GenericMultiplicationAlgorithm(c) { }
+    InnerABCAlgorithm(int c);
 
     virtual bool splitAInRowGroups();
 
@@ -24,11 +23,17 @@ public:
 
     virtual void step7_setResultAsNewBMatrix();
 
+    virtual void step8_countAndPrintGe(double geElement);
+
     virtual void step9_printResultMatrix();
 
 protected:
+    boost::mpi::communicator replicationGroup;
+    boost::mpi::communicator orthogonalGroup;
+    std::vector<std::shared_ptr<DenseMatrixFragment>> C;
+
     int q() const { return p() / (replicationFactor_ * replicationFactor_); };
-    int l() const { return 42; }; // TODO implement
+    int l() const { return replicationGroup.rank(); };
 
     void shiftMatrixA();
 };

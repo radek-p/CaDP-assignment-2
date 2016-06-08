@@ -43,7 +43,7 @@ public:
     virtual void step5_redistributeMatrixB() { };
     virtual void step6_performSingleMultiplication() = 0;
     virtual void step7_setResultAsNewBMatrix() = 0;
-    void step8_countAndPrintGe(double geElement);
+    virtual void step8_countAndPrintGe(double geElement) = 0;
     virtual void step9_printResultMatrix() = 0;
 
     bool isCoordinator();
@@ -99,7 +99,7 @@ protected:
     // In InnerABC size of each part is 1/(p/c) of size of the whole matrix,
     // but in ColA size of B is 1/p of size of whole B.
     shared_ptr<SparseMatrixFragment> A;
-    shared_ptr<DenseMatrixFragment>  B, C;
+    shared_ptr<DenseMatrixFragment>  B;
 };
 
 #endif //MATRIXMUL_GENERICMULTIPLICATIONALGORITHM_H

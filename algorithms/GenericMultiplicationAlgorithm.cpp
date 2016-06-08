@@ -13,12 +13,10 @@
 #include "densematgen.h"
 
 
-GenericMultiplicationAlgorithm::GenericMultiplicationAlgorithm(int c ) : replicationFactor_(c) {
+GenericMultiplicationAlgorithm::GenericMultiplicationAlgorithm(int c) : replicationFactor_(c) {
     // Get information about size and position in MPI_COMM_WORLD
-//    MPI_Comm_size(MPI_COMM_WORLD, &numProcGlobal_);
-//    MPI_Comm_rank(MPI_COMM_WORLD, &rankGlobal_);
     cout.precision(5);
-//    cout << "my rank: " << rankGlobal_ << endl;
+    ios_base::sync_with_stdio(false);
 }
 
 /* - Implementation of top level steps of algorithm ----------------------------------------------------------------- */
@@ -151,18 +149,6 @@ void GenericMultiplicationAlgorithm::step3_generateMatrixB(int seed) {
 
 void GenericMultiplicationAlgorithm::step7_setResultAsNewBMatrix() {
 
-}
-
-void GenericMultiplicationAlgorithm::step8_countAndPrintGe(double geElement) {
-
-    int localCount = C->countGreaterOrEqual(geElement); // TODO swith to C
-    int globalCount = 0;
-
-    boost::mpi::reduce(world, localCount, globalCount, std::plus<int>(), 0);
-
-    if (isCoordinator()) {
-        cout << "GE count: " << globalCount;
-    }
 }
 
 std::vector<int> GenericMultiplicationAlgorithm::prepareDivision(int matrixSize, int p) {

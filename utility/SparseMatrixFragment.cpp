@@ -105,7 +105,37 @@ std::shared_ptr<SparseMatrixFragment> SparseMatrixFragment::mergeRows(const std:
     std::shared_ptr<SparseMatrixFragment> res = shared_ptr<SparseMatrixFragment>(new SparseMatrixFragment);
     setMergeDimensions(fragmentsToConcat, res->size_);
 
-    // TODO Implement sparse row merge
+//    cout << "((1)) preparing to make merged matrix:" << endl;
+//    cout << "width: " << res->size().matrixWidth()
+//            << ", height: " << res->size().matrixHeight()
+//            << ", p = " << res->size().pRow() << ", " << res->size().pCol()
+//            << ", k = " << res->size().kRow() << ", " << res->size().kCol() << endl;
+
+    res->size_.nnz_ = 0;
+    res->rowIntervals.push_back(0);
+    for (int rowIdx = 0; rowIdx < res->size().pRow(); ++rowIdx) {
+        res->rowIntervals.push_back(0);
+    }
+
+    for (int partIdx = 0; partIdx < fragmentsToConcat.size(); ++partIdx) {
+        auto const &part = fragmentsToConcat[partIdx];
+        for (int rowIdx = part->size().pRow(); rowIdx < part->size().kRow(); ++rowIdx) {
+
+            const int rowBeginIncl = part->rowIntervals[rowIdx];
+            const int rowEndExcl = part->rowIntervals[rowIdx + 1];
+
+            for (int entryIdx = rowBeginIncl; entryIdx < rowEndExcl; ++entryIdx) {
+                res->entries.push_back(part->entries[entryIdx]);
+                res->columns.push_back(part->columns[entryIdx]);
+            }
+
+            res->rowIntervals.push_back((int) res->entries.size());
+            ++res->size_.nnz_;
+        }
+    }
+
+    for (int rowIdx = res->size().kRow(); rowIdx < res->size().matrixHeight(); ++rowIdx)
+        res->rowIntervals.push_back(0);
 
     return res;
 }

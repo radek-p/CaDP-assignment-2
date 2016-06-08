@@ -20,11 +20,16 @@ public:
 
     virtual void step7_setResultAsNewBMatrix();
 
+    virtual void step8_countAndPrintGe(double geElement);
+
     virtual void step9_printResultMatrix();
 
     virtual bool splitAInRowGroups();
 
     void shiftMatrixA();
+
+protected:
+    std::shared_ptr<DenseMatrixFragment> C;
 };
 
 #endif //MATRIXMUL_COLAALGORITHM_H

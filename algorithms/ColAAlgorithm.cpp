@@ -121,7 +121,13 @@ void ColAAlgorithm::shiftMatrixA() {
 }
 
 
+void ColAAlgorithm::step8_countAndPrintGe(double geElement) {
+    int localCount = C->countGreaterOrEqual(geElement);
+    int globalCount = 0;
 
+    boost::mpi::reduce(world, localCount, globalCount, std::plus<int>(), 0);
 
-
-
+    if (isCoordinator()) {
+        cout << "GE count: " << globalCount;
+    }
+}
