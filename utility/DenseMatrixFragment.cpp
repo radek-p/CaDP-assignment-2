@@ -21,9 +21,12 @@ std::shared_ptr<DenseMatrixFragment> DenseMatrixFragment::mergeRows(
 
     for (const auto &item : fragmentsToConcat) {
         for (int i = item->size().pRow(); i < item->size().kRow(); ++i) {
-            for (int j = item->size().pCol(); j < item->size().kCol(); ++j) {
-                res->at(i, j) = item->at(i, j); // TODO Maybe improve efficency
-            }
+            const element_t *firstToCopy = &item->at(i, item->size().pCol());
+            const int size = item->size().fragmentWidth();
+            copy(firstToCopy, firstToCopy + size, &res->at(i, item->size().pCol()));
+//            for (int j = item->size().pCol(); j < item->size().kCol(); ++j) {
+//                res->at(i, j) = item->at(i, j);
+//            }
         }
     }
 
@@ -33,8 +36,17 @@ std::shared_ptr<DenseMatrixFragment> DenseMatrixFragment::mergeRows(
 std::shared_ptr<DenseMatrixFragment> DenseMatrixFragment::mergeCols(
         const std::vector<shared_ptr<DenseMatrixFragment>> &fragmentsToConcat) {
 
-    // In current implementation the same as merge of rows.
-    return mergeRows(fragmentsToConcat);
+    auto res = createMatrixForMerge(fragmentsToConcat);
+
+    for (const auto &item : fragmentsToConcat) {
+        for (int i = item->size().pRow(); i < item->size().kRow(); ++i) {
+            for (int j = item->size().pCol(); j < item->size().kCol(); ++j) {
+                res->at(i, j) = item->at(i, j); // TODO Maybe improve efficency
+            }
+        }
+    }
+
+    return res;
 }
 
 DenseMatrixFragment::DenseMatrixFragment(const MatrixFragmentDescriptor &size) :
