@@ -39,7 +39,7 @@ private:
 public:
     GenericMultiplicationAlgorithm(int c);
 
-    void step1_loadMatrixA(const std::string &fileName);
+    bool step1_loadMatrixA(const std::string &fileName);
     void step2_distributeMatrixA();
     void step3_generateMatrixB(int seed);
     virtual void step4_redistributeMatrixA() = 0;

@@ -4,12 +4,12 @@
 #include <getopt.h>
 #include <string>
 #include <iostream>
+#include <fstream>
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-local-typedef"
 #pragma clang diagnostic ignored "-Wunused-parameter"
 #include <boost/mpi.hpp>
-//#include <boost/serialization/serialization.hpp>
 #pragma clang diagnostic pop
 
 #include "algorithms/GenericMultiplicationAlgorithm.h"
@@ -73,52 +73,33 @@ int main(int argc, char *argv[]) {
     /* -------------------------- *
      *   Multiplication process   *
      * -------------------------- */
-    GenericMultiplicationAlgorithm * algorithm;
+    shared_ptr<GenericMultiplicationAlgorithm> algorithm;
 
     /* Select appropriate algorithm of parallel multiplication */
-    if (use_inner) { algorithm = new InnerABCAlgorithm(repl_fact); }
-    else           { algorithm = new ColAAlgorithm    (repl_fact); }
-//    algorithm = new ColAAlgorithm    (repl_fact);
+    if (use_inner) { algorithm = make_shared<InnerABCAlgorithm>(repl_fact); }
+    else           { algorithm = make_shared<ColAAlgorithm>    (repl_fact); }
 
-    if ((gen_seed == -1) || (algorithm->isCoordinator() && matrixASourceFile.size() == 0)) {
-        fprintf(stderr, "error: missing seed or sparse matrix file; exiting\n");
-        // this call is not needed anymore, Boost's mpi::environment
-        // class destructor will call MPI_Finalize():
-        // MPI_Finalize();
+    if (exponent < 1) {
+        if (algorithm->isCoordinator())
+            cerr << "Error: Invalid exponent '" << exponent << "'." << endl
+                 << "Exponent must be greater than 0." << endl;
         return 3;
     }
 
-//    /* Playground */ {
-//        cout << world.rank() << endl;
-//        world.barrier();
-//
-//        DenseMatrixFragment *matrix = new DenseMatrixFragment();
-//        if (world.rank() == 0) {
-//            MatrixFragment::MatrixFragmentDescriptor size;
-//            size.matrixWidth(3);
-//            size.matrixHeight(3);
-//            size.fragmentHeight(3);
-//            size.fragmentWidth(3);
-//            size.pRow(0); size.pCol(0);
-//
-//            DenseMatrixFragment matrix2(size);
-//
-//            matrix2 = 1.0;
-//            matrix2.at(1,1) = 42.0;
-//
-//            mpi::broadcast(world, matrix2, 0);
-//            *matrix = matrix2;
-//        } else {
-//            mpi::broadcast(world, *matrix, 0);
-//        }
-//        world.barrier();
-//
-//        cout << world.rank() << ": " << matrix->at(1, 1) << endl;
-//        return 0;
-//    }
+    if (gen_seed == -1) {
+        if (algorithm->isCoordinator())
+            cerr << "Error: Missing seed." << endl;
+        return 3;
+    }
 
     /* Load matrix from file */ {
-        algorithm->step1_loadMatrixA(matrixASourceFile);
+        bool success = algorithm->step1_loadMatrixA(matrixASourceFile);
+        if (!success) {
+            if (algorithm->isCoordinator())
+                cerr << "Error: Cannot read matrix A file:" << endl
+                     << "'"  << matrixASourceFile << "'" << endl;
+            return 3;
+        }
     }
 
     world.barrier();
@@ -155,9 +136,9 @@ int main(int argc, char *argv[]) {
             algorithm->step9_printResultMatrix();
         }
         if (algorithm->isCoordinator()) {
-            cerr << "\n\n\nRunime statistics:\n"
-            << "\tcommunication:\t" << (comm_end - comm_start) << "\n"
-            << "\tcomputation:  \t" << (comp_end - comp_start) << endl;
+            cerr << "\n\nRunime statistics:\n"
+            << "\tinitial distribution phase:\t" << (comm_end - comm_start) << "\n"
+            << "\t product computation phase:\t" << (comp_end - comp_start) << endl;
         }
     }
 

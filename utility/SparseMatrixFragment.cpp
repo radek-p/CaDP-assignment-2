@@ -64,13 +64,7 @@ const SparseMatrixFragment::SparseMatrixFragmentDescriptor &SparseMatrixFragment
     return size_;
 }
 
-SparseMatrixFragment::SparseMatrixFragment(const std::string &fileName) {
-    loadFromFile(fileName);
-}
-
-void SparseMatrixFragment::loadFromFilePrivate(const std::string &fileName) {
-    ifstream matrixSource;
-    matrixSource.open(fileName);
+void SparseMatrixFragment::loadFromFile(istream &matrixSource) {
     matrixSource >> size_.matrixWidth_
     >> size_.matrixHeight_
     >> size_.nnz_
@@ -96,8 +90,6 @@ void SparseMatrixFragment::loadFromFilePrivate(const std::string &fileName) {
     for (int i = 0; i < size().nnz(); ++i) {
         matrixSource >> columns[i];
     }
-
-    matrixSource.close();
 }
 
 std::shared_ptr<SparseMatrixFragment> SparseMatrixFragment::mergeRows(const std::vector<std::shared_ptr<SparseMatrixFragment>> &fragmentsToConcat) {
@@ -192,13 +184,6 @@ void SparseMatrixFragment::setMergeDimensions(const std::vector<std::shared_ptr<
     descr.pRow(minPRow);
     descr.kCol(maxKCol);
     descr.kRow(maxKRow);
-}
-
-std::shared_ptr<SparseMatrixFragment> SparseMatrixFragment::loadFromFile(const std::string &fileName) {
-    auto res = shared_ptr<SparseMatrixFragment>(new SparseMatrixFragment());
-    res->loadFromFilePrivate(fileName);
-
-    return res;
 }
 
 void SparseMatrixFragment::splitIntoColumnGroups(

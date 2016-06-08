@@ -45,9 +45,6 @@ public:
     // Information about matrix dimensions
     const SparseMatrixFragmentDescriptor &size() const;
 
-    // TODO Maybe remove
-    SparseMatrixFragment(const std::string &fileName);
-
     SparseMatrixFragment(const SparseMatrixFragmentDescriptor &descriptor);
 
     // These methods return submatrices that only contain rows / columns in given interval
@@ -61,13 +58,11 @@ public:
 
     friend std::ostream& operator<< (std::ostream& stream, const SparseMatrix& matrix);
 
-    static std::shared_ptr<SparseMatrixFragment> loadFromFile(const std::string &fileName);
-
-    virtual ~SparseMatrixFragment() { /*std::cout << world.rank() << ": Sparse matrix was deleted!" << std::endl; */ } // TODO delete that later
-
-    // Constructor used by internal methods that
+    // Constructor used by methods that
     // have to perform custom initialisation
     SparseMatrixFragment() {}
+
+    void loadFromFile(std::istream &matrixSource);
 
 private:
     SparseMatrixFragmentDescriptor size_;
@@ -82,8 +77,6 @@ private:
         ar & boost::serialization::base_object<MatrixFragment>(*this);
         ar & size_ & entries & rowIntervals & columns;
     }
-
-    void loadFromFilePrivate(const std::string &fileName);
 };
 
 BOOST_IS_MPI_DATATYPE(SparseMatrixFragment::SparseMatrixFragmentDescriptor)

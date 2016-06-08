@@ -8,6 +8,7 @@
 #include <boost/mpi/collectives.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include <fstream>
 
 #include "GenericMultiplicationAlgorithm.h"
 #include "densematgen.h"
@@ -60,10 +61,25 @@ int GenericMultiplicationAlgorithm::getFirstIdx(
     return jthBlockFirstIncl;
 }
 
-void GenericMultiplicationAlgorithm::step1_loadMatrixA(const string &fileName) {
+bool GenericMultiplicationAlgorithm::step1_loadMatrixA(const string &fileName) {
+    bool matrixSuccesfullyOpened;
     if (isCoordinator()) {
-        wholeA = SparseMatrixFragment::loadFromFile(fileName);
+        ifstream matrixSource;
+        matrixSource.open(fileName);
+        matrixSuccesfullyOpened = matrixSource.is_open();
+        boost::mpi::broadcast(world, matrixSuccesfullyOpened, 0);
+        if (!matrixSuccesfullyOpened)
+            return false;
+        else {
+            wholeA = make_shared<SparseMatrix>();
+            wholeA->loadFromFile(matrixSource);
+        }
+    } else {
+        boost::mpi::broadcast(world, matrixSuccesfullyOpened, 0);
+        if (!matrixSuccesfullyOpened)
+            return false;
     }
+    return true;
 }
 
 void GenericMultiplicationAlgorithm::step2_distributeMatrixA() {
