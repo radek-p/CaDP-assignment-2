@@ -1,10 +1,21 @@
 //
-// Created by Radosław Piórkowski on 06.06.2016.
+//         autor: Radosław Piórkowski
+// numer indeksu: 335451
 //
 
 #include "MatrixOperations.h"
+
 #include <emmintrin.h>
 
+
+// Code to multiply a row vector by a constant and add it to result
+// This is adapted version of code for floating point multiplication
+// from the webpage:
+//
+// http://fastcpp.blogspot.com/2013/03/efficient-processing-of-arrays-using.html
+//
+// Unfortunatelly it turned out, that the code hasn't improved the speed
+// of multiplication at all.
 #define ROUND_DOWN(x, s) ((x) & ~((s)-1))
 struct multiplicationKernel {
 public:
@@ -79,11 +90,14 @@ void DeferredSparseDenseMultiplication::exec(DenseMatrixFragment &C, bool overri
 
     for (int row = pRow; row < kRow; ++row) {
         for (int rowElementIdx = A->rowIntervals[row]; rowElementIdx < A->rowIntervals[row+1]; ++rowElementIdx) {
-            kernel.multiplier = A->entries[rowElementIdx];
             double *cElem = &C.at(row, pCol);
             double *bElem = &B->at(A->columns[rowElementIdx], pCol);
 
+            // The kernel is executed, however its speed is comparable to the
+            // speed of for loop placed below.
+            kernel.multiplier = A->entries[rowElementIdx];
             executeKernel(cElem, bElem, (size_t) (kCol - pCol), kernel);
+//            const double multiplier = A->entries[rowElementIdx];
 //            for (int col = pCol; col < kCol; ++col) {
 //                *cElem += multiplier * (*bElem);
 //                ++cElem; ++bElem;

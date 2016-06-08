@@ -5,12 +5,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-local-typedef"
-#pragma clang diagnostic ignored "-Wunused-parameter"
 #include <boost/mpi.hpp>
-#pragma clang diagnostic pop
 
 #include "algorithms/GenericMultiplicationAlgorithm.h"
 #include "algorithms/ColAAlgorithm.h"

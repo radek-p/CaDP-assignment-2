@@ -6,7 +6,6 @@
 #ifndef MATRIXMUL_GENERICMULTIPLICATIONALGORITHM_H
 #define MATRIXMUL_GENERICMULTIPLICATIONALGORITHM_H
 
-
 #include <string>
 #include <memory>
 #include <boost/mpi/communicator.hpp>
@@ -25,9 +24,8 @@
  *
  * A - fragment of sparse matrix
  * B - fragment of dense matrix
- * C - fragment of A*B that is being computed
  *
- * one letter variable names have the same meaning as in provided paper.
+ * one letter function names have the same meaning as in provided paper.
  */
 class GenericMultiplicationAlgorithm {
 private:

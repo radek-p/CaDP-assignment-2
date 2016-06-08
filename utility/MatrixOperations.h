@@ -1,5 +1,6 @@
 //
-// Created by Radosław Piórkowski on 06.06.2016.
+//         autor: Radosław Piórkowski
+// numer indeksu: 335451
 //
 
 #ifndef MATRIXMUL_MATRIXOPERATIONS_H

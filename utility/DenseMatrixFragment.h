@@ -1,16 +1,18 @@
 //
-// Created by Radosław Piórkowski on 05.06.2016.
+//         autor: Radosław Piórkowski
+// numer indeksu: 335451
 //
 
 #ifndef MATRIXMUL_DENSEMATRIX_H
 #define MATRIXMUL_DENSEMATRIX_H
 
 #include "MatrixFragment.h"
-#include "MatrixOperations.h"
 
 #include <vector>
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/base_object.hpp>
+
+#include "MatrixOperations.h"
 
 
 typedef DenseMatrixFragment DenseMatrix;

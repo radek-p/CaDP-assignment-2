@@ -17,6 +17,7 @@
 #include "MatrixFragment.h"
 #include "MatrixOperations.h"
 
+
 typedef SparseMatrixFragment SparseMatrix;
 
 class SparseMatrixFragment : public MatrixFragment {

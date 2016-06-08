@@ -1,5 +1,6 @@
 //
-// Created by Radosław Piórkowski on 05.06.2016.
+//         autor: Radosław Piórkowski
+// numer indeksu: 335451
 //
 
 #include "DenseMatrixFragment.h"

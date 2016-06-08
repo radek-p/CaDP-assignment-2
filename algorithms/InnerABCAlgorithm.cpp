@@ -4,11 +4,13 @@
 //
 
 #include "InnerABCAlgorithm.h"
+
 #include <boost/mpi/collectives.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 #include <memory>
 
 using namespace std;
+
 
 InnerABCAlgorithm::InnerABCAlgorithm(int _c) :
         GenericMultiplicationAlgorithm(_c),

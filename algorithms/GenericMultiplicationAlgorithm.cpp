@@ -3,6 +3,8 @@
 // numer indeksu: 335451
 //
 
+#include "GenericMultiplicationAlgorithm.h"
+
 #include <iostream>
 #include <sstream>
 #include <boost/mpi/collectives.hpp>
@@ -10,7 +12,6 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <fstream>
 
-#include "GenericMultiplicationAlgorithm.h"
 #include "densematgen.h"
 
 using namespace std;
